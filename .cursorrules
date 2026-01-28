@@ -1,0 +1,35 @@
+# .cursorrules for Takta (OAC-SEO)
+
+## 🧠 Project Context
+Takta is a FullStack Industrial Engineering System for Operadora Avícola Colombia.
+It manages Assets (Machines), Standards (Time Studies), and Continuous Improvement (Kaizen/5S).
+
+## 🛠️ Tech Stack
+- **Backend**: FastAPI (Python 3.10+), SQLModel, Pydantic.
+- **Frontend**: Vanilla JS + Bootstrap 5 (Bios Apps Design System).
+- **Database**: SQL Server (Production), SQLite (Dev/Test).
+- **Docs**: Editor.js (JSON/Markdown hybrid).
+
+## 📝 Coding Standards
+
+### Python (Backend)
+- Use **SQLModel** for all DB models. Keep relationships explicit.
+- Follow **PEP 8** style.
+- Use explicit type hints `def function(arg: str) -> int:`.
+- **Async** by default for DB operations.
+- Handle `ImportError` by running via `run_local.ps1`.
+
+### JavaScript (Frontend)
+- **Vanilla JS** prioritized over frameworks for this specific architecture.
+- Use `fetch` API for backend calls.
+- Follow **Bios Apps Design System** CSS classes (`btn-gb-petroleo1`, `card-gb`).
+
+### General
+- **"Engineer-First" UX**: High data density, minimal whitespace, keyboard shortcuts.
+- **Comments**: Explain *WHY*, not just *WHAT*, especially in complex algorithms (Time Calc, Kanban).
+- **File Structure**: Keep `api/` routers separated by domain (Assets, Eng, CI, Audits).
+
+## 🚨 Critical Rules
+1. Never edit `PLAN_MAESTRO_COMPLETE.md` without explicit permission.
+2. Always validate JSON schemas for `FormatTemplates`.
+3. Use `run_local.ps1` to start the server.
