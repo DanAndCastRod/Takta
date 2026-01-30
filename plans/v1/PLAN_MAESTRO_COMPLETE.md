@@ -46,7 +46,7 @@ El desarrollo se ha dividido en 5 fases secuenciales para asegurar entregables d
 > **Semana 1-2**
 > Establecimiento del "Sistema Nervioso" del proyecto.
 - **Backend**: Configuración FastAPI, SQLModel Recursivo (Árbol de Activos).
-- **Frontend**: Layout Corporativo, Navegador de Planta (Sidebar).
+- **Frontend**: Layout Corporativo, Navegador de Planta (Sidebar), **Visor de Planos Interactivos (Draw.io/SVG Integration)**.
 
 ### [FASE 2: Motor Documental](FASE_2_DOCUMENTAL.md)
 > **Semana 3-4**
@@ -56,15 +56,15 @@ El desarrollo se ha dividido en 5 fases secuenciales para asegurar entregables d
 
 ### [FASE 3: Motor de Ingeniería Avanzada](FASE_3_INGENIERIA.md)
 > **Semana 5-6**
-> Medición, Estandarización y Modelado de Restricciones (Capacidad y Flujo).
+> Medición, Estandarización (Metodología Nievel) y Modelado de Restricciones (Capacidad y Flujo).
 - **Backend**: Lógica de "Triada", Grafos de Precedencia (NetworkX), Motor de Capacidad Jerárquica (Rollup Automático).
-- **Frontend**: Cronómetro Digital, Configuración de Puestos (Manuales/Mecánicos), Calculadora de Tripulación (Staffing).
+- **Frontend**: Cronómetro Digital (con conteo de unidades), Configuración de Puestos (Manuales/Mecánicos), Calculadora de Tripulación (Staffing).
 
 ### [FASE 4: Control de Piso y Captura Móvil](FASE_4_EJECUCION.md)
 > **Semana 7-8**
 > "La Tablet del Analista" y Bitácora de Producción.
 - **Backend**: API de Registros (Logs), Gestión de Personal Operativo (Skills/Turnos).
-- **Frontend**: Interfaz Móvil (Touch-First), Captura de Muestreos y Paros, Validación en Sitio.
+- **Frontend**: Interfaz Móvil (Touch-First), Captura de Muestreos y Paros, **Dictado por Voz (Voice-to-Text)** para bitácora de mantenimiento.
 
 ### [FASE 5: Excelencia Operacional](FASE_5_EXCELENCIA.md)
 > **Semana 9-10**
@@ -87,7 +87,8 @@ El desarrollo se ha dividido en 5 fases secuenciales para asegurar entregables d
 *   **Enterprise**: Bios Design System (Bootstrap) (Corporativo).
 *   **Common Core**: La lógica de negocio JS se comparte donde es posible.
 *   **Mobile**: PWA / Touch-optimized views for Analysts.
-*   Componentes Clave: `AssetTree`, `DocumentEditor`, `VSMCanvas`, `StaffingCalculator`.
+*   **Integraciones Visuales**: Renderizado de Mapas `draw.io` con Capas (Layers) de información (Calor, Estado).
+*   Componentes Clave: `AssetTree`, `DocumentEditor`, `VSMCanvas`, `StaffingCalculator`, `PlantMapViewer`.
 
 ---
 

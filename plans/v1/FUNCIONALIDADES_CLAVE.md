@@ -7,6 +7,7 @@ Este documento define el núcleo funcional de Takta para su liberación como her
 **Necesidad que cubre**: Elimina la desconexión entre los documentos y la realidad física. Permite organizar la información por su ubicación lógica.
 *   **Jerarquía Flexible**: Planta > Área > Puesto de Trabajo (Máquina o Manual).
 *   **Ficha de Vida**: Hoja de vida digital del activo (especificaciones, fecha de compra, ubicacion).
+*   **Mapas Interactivos**: Carga de planos de planta (Draw.io/SVG) con superposición de capas (Semaforización de estándares, calor de Accidentalidad).
 
 ## 2. Motor de Estandarización (The Standard Engine)
 **Definición**: Sistema para definir CÓMO se hace el trabajo.
@@ -18,7 +19,8 @@ Este documento define el núcleo funcional de Takta para su liberación como her
 ## 3. Ingeniería de Métodos y Tiempos
 **Definición**: Herramientas para medir y optimizar el trabajo.
 **Necesidad que cubre**: Reemplaza el cronómetro físico y las plantillas de Excel dispersas.
-*   **Cronómetro Digital**: Toma de tiempos en interfaz web/móvil.
+*   **Referencia Metodológica**: Basado en formatos de **Benjamin Nievel** (Métodos, Estándares y Diseño del Trabajo).
+*   **Cronómetro Digital**: Toma de tiempos en interfaz web/móvil con **conteo de unidades/ítems** integrado.
 *   **Cálculo de Tiempos**: Algoritmos para `Tiempo Observado -> Tiempo Normal -> Tiempo Estándar` (con Factores de Calificación y Suplementos).
 *   **Muestreo de Trabajo**: Herramienta para estudios de frecuencia (Productivo vs Improductivo).
 
@@ -34,6 +36,8 @@ Este documento define el núcleo funcional de Takta para su liberación como her
 **Necesidad que cubre**: Trazabilidad de la producción y las paradas.
 *   **Bitácora de Producción**: Registro de inicio/fin de órdenes.
 *   **Registro de Paros**: Captura de eventos de pérdida de disponibilidad.
+*   **Dictado por Voz**: Funcionalidad de voz-a-texto para registrar diagnósticos de mantenimiento sin escribir.
+*   **Contexto Automático**: Inferencia de Área/Puesto basado en el usuario logueado (ej. Supervisor Sellado -> Área Sellado).
 
 ## 6. Mejora Continua (Kaizen Loop)
 **Definición**: Gestión de hallazgos y acciones correctivas.

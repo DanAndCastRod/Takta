@@ -1,4 +1,4 @@
-# FASE 4: Excelencia Operacional (Lean & Calidad)
+# FASE 5: Excelencia Operacional (Lean & Calidad)
 
 > **Estado**: Pendiente
 > **Objetivo**: Herramientas visuales y logísticas (Kanban, 5S, VSM).

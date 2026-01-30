@@ -1,7 +1,7 @@
 # FASE 3: Motor de Ingeniería (Estándares y Tiempos)
 
 > **Estado**: Pendiente (Depende de Fase 1)
-> **Objetivo**: Implementar la lógica matemática para cálculo de Tiempos Estándar y gestión de la "Triada".
+> **Objetivo**: Implementar la lógica matemática para cálculo de Tiempos Estándar (Basado en **Benjamin Nievel**) y gestión de la "Triada".
 
 ---
 
@@ -32,6 +32,7 @@
 ### 📋 Checklist Técnico
 - **Frontend Cronómetro**:
     - [ ] Interfaz móvil-friendly (Botones grandes "Lap", "Stop").
+    - [ ] **Contador de Unidades**: Funcionalidad para conteo de ítems integrados al tiempo.
     - [ ] Feedback visual de ciclo actual y acumulado.
     - [ ] Tabla de ciclos en vivo (permite marcar "Anormal" manual).
 - **Backend Cálculo (`/api/engineering/calculate`)**:
