@@ -48,7 +48,8 @@ Este documento define el núcleo funcional de Takta para su liberación como her
 ---
 
 ## Estrategia Técnica Open Source
-*   **Stack Frontend**: HTML5 + **TailwindCSS** (Diseño Moderno y Agnóstico).
+*   **Stack Frontend**: HTML5 + **TailwindCSS v3.4+** (Diseño Moderno y Agnóstico).
 *   **Stack Backend**: Python (FastAPI) + SQL Model.
 *   **Base de Datos**: SQLite (Por defecto) / PostgreSQL.
 *   **Infraestructura**: Ejecución local (Script Python).
+*   **Testing**: pytest (backend) + Vitest (frontend).

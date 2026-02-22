@@ -180,3 +180,25 @@ class FormatInstance(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
     content_json: str # Editor.js stored data
+
+
+# --- Plant Layout Engine (Takta Visual Editor) ---
+
+from sqlalchemy import Column, Text
+
+class PlantLayout(SQLModel, table=True):
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    name: str = Field(index=True)
+    description: Optional[str] = None
+    
+    # Storage
+    json_content: str = Field(sa_column=Column(Text)) # Fabric.js JSON
+    thumbnail_data: Optional[str] = Field(sa_column=Column(Text)) # Base64 PNG Preview
+    
+    # Metadata
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Foreign Keys (Future Proofing)
+    plant_id: Optional[uuid.UUID] = Field(default=None, foreign_key="asset.id")

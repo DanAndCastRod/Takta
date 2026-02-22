@@ -1,0 +1,25 @@
+{
+    "default": "community",
+    "themes": {
+        "community": {
+            "name": "Takta Community",
+            "type": "local",
+            "css": [
+                "themes/community/glassmorphism.css"
+            ],
+            "class": "theme-community"
+        },
+        "enterprise": {
+            "name": "Takta Enterprise - Grupo BIOS",
+            "type": "cdn",
+            "cdnBase": "/Bios_apps/cdn/design-system",
+            "css": [
+                "vendor/css/bootstrap.min.css",
+                "vendor/css/bios-design-system.css",
+                "vendor/css/fontawesome.min.css",
+                "vendor/css/pe7sicons.css"
+            ],
+            "class": "theme-enterprise"
+        }
+    }
+}

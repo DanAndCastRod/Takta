@@ -1,0 +1,58 @@
+@reference "tailwindcss";
+
+/* Glassmorphism Utilities */
+.glass {
+    background: var(--glass-bg, rgba(255, 255, 255, 0.7));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.5));
+    box-shadow: var(--glass-shadow, 0 8px 32px 0 rgba(31, 38, 135, 0.15));
+}
+
+.glass-panel {
+    @apply bg-white/80 backdrop-blur-md border border-white/50 shadow-lg transition-all duration-300;
+}
+
+/* Grid Pattern for Canvas */
+.bg-grid-pattern {
+    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400;
+}
+
+/* Components Overrides */
+.theme-community .tk-btn-primary {
+    @apply bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium;
+    @apply hover:bg-indigo-700 active:scale-95 transition-all shadow-md;
+}
+
+.theme-community .tk-btn-secondary {
+    @apply bg-white text-slate-600 px-4 py-2 rounded-lg font-medium border border-slate-200;
+    @apply hover:bg-slate-50 hover:text-indigo-600 transition-all shadow-sm;
+}
+
+.theme-community .tk-card {
+    @apply bg-white/90 backdrop-blur rounded-xl border border-white/60 p-6 shadow-xl;
+}
+
+/* Community Theme Base */
+.theme-community {
+    @apply bg-slate-50 text-slate-800;
+}
