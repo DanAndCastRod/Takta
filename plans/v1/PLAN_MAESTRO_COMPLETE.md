@@ -1,49 +1,45 @@
-# Plan Maestro de Implementación OAC-SEO
+# Plan Maestro de Implementación — Takta
 
-> **Versión**: 3.0 (Consolidación)
-> **Fecha**: 2026-02-10
-> **Estado**: Planificación Definitiva
+> **Versión**: 4.0 (Armonización Global)
+> **Fecha**: 2026-02-25
+> **Estado**: Fase 1 ✅ — Fase 2 ✅ (MVP) — Fase 3 🔄 En progreso
 
 Este documento es el **Índice Estratégico**. Para los detalles de ejecución sprint por sprint, consultar los planes de fase específicos vinculados abajo.
 
 ---
 
-## 🌍 O. Estrategia Dual (Open Source & Enterprise)
-Takta se desarrolla bajo un modelo "Open Core":
-1.  **Takta Community (Open Source)**:
-    *   **Público**: Ingenieros Industriales, PyMEs, Consultores.
-    *   **Diseño**: **TailwindCSS v3.4+** + Glassmorphism (Estética moderna, agnóstica de marca).
-    *   **Infraestructura**: Local / On-Premise (SQLite/Postgres). Sin dependencias complejas.
-2.  **Takta Enterprise (Grupo Bios)**:
-    *   **Público**: Plantas de Operadora Avícola / Grupo Bios.
-    *   **Diseño**: **Bios Design System** (Bootstrap 5 + Variables Corporativas).
-    *   **Infraestructura**: Windows Server IIS + SQL Server + Azure AD.
+## 🏛️ 1. Visión y Alcance
 
-### [O.1 Theme Manager System](THEME_MANAGER.md)
-Sistema de gestión de temas que permite alternar dinámicamente entre variantes:
-- Estrategia Dual: Community (Tailwind) vs Enterprise (Bios DS)
-- Layout Wrapper para inyección estructural dinámica.
-- Diseño Visual Open Source: `DESIGN_OPENSOURCE.md`
-- **Core**: `ThemeManager.js` detecta ambiente y carga CSS correspondiente
-- **Community**: TailwindCSS bundled localmente + Glassmorphism
-- **Enterprise**: Bios Design System via CDN corporativo (`/Bios_apps/cdn/...`)
-- **API**: `TaktaTheme.set('community')`, `TaktaTheme.get()`, `TaktaTheme.detectEnvironment()`
-- **Componentes Abstractos**: Clases `.tk-*` que mapean a cada sistema de diseño
+### 1.1 ¿Qué es Takta?
 
-## 🏛️ 1. Visión y Alcance (Business Core)
+**Takta** es una plataforma open source de **estandarización operativa e ingeniería industrial** que transforma el "Papel Muerto" (SOPs en Excel, cronómetros físicos, auditorías en papel) en **Datos Vivos** vinculados al contexto real de la operación.
 
-**Objetivo**: Transformar la ingeniería de planta de Operadora Avícola, pasando de "Papel Muerto" a "Datos Vivos".
+No es solo una herramienta de piso de planta — es un **sistema nervioso operacional** que conecta:
+- **Piso** (Ejecución, Bitácora, Captura Móvil)
+- **Coordinación** (Gestión de estándares, documentación, personal)
+- **Análisis** (Cronometraje, capacidad, balanceo de líneas)
+- **Estrategia** (Auditorías, Mejora Continua, VSM, KPIs)
 
-### 1.1 El Problema
+### 1.2 El Problema
 Hoy, un estudio de tiempos o un SOP vive en un Excel o PDF aislado. Si el proceso cambia (ej. nueva máquina), el documento queda obsoleto y desconectado de la realidad productiva.
 
-### 1.2 La Solución Takta
+### 1.3 La Solución Takta
 Un ecosistema digital donde:
-1.  **El Activo (Máquina/Línea)** es el centro del universo.
+1.  **El Activo (Máquina/Línea/Puesto)** es el centro del universo.
 2.  **El Estándar** es un dato viviente (Triada: Activo + Actividad + SKU) que "sabe" cuánto debe tardar y cómo debe hacerse.
-3.  **La Mejora (Kaizen)** es trazable desde el hallazgo hasta el cierre.
-4.  **La Ejecución (Trazabilidad)**: Registro digital en tiempo real de qué pasó, cuándo y quién lo hizo.
-5.  **La Inteligencia (Capacidad)**: Modelado flexible de planta (Puestos con/sin máquina) y cálculo dinámico de tripulaciones óptimas.
+3.  **La Documentación** es conocimiento digital estructurado (SOPs, LUPs) vinculado al activo, editable con Editor.js.
+4.  **La Medición (Cronómetro Digital)**: Estudios de tiempos preconfigurables con elementos pre-mapeados, Splits y Laps, cálculo estadístico de estándares.
+5.  **La Inteligencia (Capacidad)**: Modelado flexible de planta y cálculo dinámico de tripulaciones óptimas.
+6.  **La Ejecución (Trazabilidad)**: Registro digital en tiempo real de qué pasó, cuándo y quién lo hizo.
+7.  **La Mejora (Kaizen)**: Trazable desde el hallazgo hasta el cierre.
+8.  **La Coordinación**: Gestión transversal — análisis, estrategia y toma de decisiones a nivel gerencial.
+9.  **La Visualización (Mapas de Planta)**: Editor interactivo de planos industriales con capas funcionales ([PlantaEditor](PLANT_EDITOR.md)).
+
+> [!IMPORTANT]
+> **Transferibilidad a Servucción**: Takta está diseñado con abstracciones agnósticas del dominio.
+> Los "elementos" de un estudio de tiempos, los "activos" del árbol, y las "actividades" del catálogo
+> son aplicables tanto a **manufactura** (bienes tangibles) como a **servucción** (productos intangibles:
+> salud, logística, servicios financieros, etc.). La arquitectura de datos no asume un sector industrial específico.
 
 ---
 
@@ -59,18 +55,18 @@ gantt
     dateFormat YYYY-MM-DD
     axisFormat %b %d
 
-    section Fase 1: Fundamentos
-    Sprint 1 - Backend Core + Auth       :f1s1, 2026-02-17, 5d
-    Sprint 2 - Frontend Shell + SPA      :f1s2, after f1s1, 5d
+    section Fase 1: Fundamentos ✅
+    Sprint 1 - Backend Core + Auth       :done, f1s1, 2026-02-17, 5d
+    Sprint 2 - Frontend Shell + SPA      :done, f1s2, after f1s1, 5d
 
-    section Fase 2: Documental
-    Sprint 3 - Backend Documental        :f2s3, after f1s2, 5d
-    Sprint 4 - Frontend Editor.js        :f2s4, after f2s3, 5d
+    section Fase 2: Documental ✅
+    Sprint 3 - Backend Documental        :done, f2s3, after f1s2, 3d
+    Sprint 4 - Frontend Editor.js        :done, f2s4, after f2s3, 2d
 
     section Fase 3: Ingeniería
-    Sprint 5 - Gestión de Estándares     :f3s5, after f2s4, 5d
+    Sprint 5 - Gestión de Estándares     :done, f3s5, 2026-02-25, 5d
     Sprint 5.5 - Capacidad y Staffing    :f3s55, after f3s5, 3d
-    Sprint 6 - Cronometraje + Muestreo   :f3s6, after f3s5, 5d
+    Sprint 6 - Cronómetro + Muestreo    :f3s6, after f3s5, 5d
 
     section Fase 4: Ejecución
     Sprint 7 - Bitácora + Captura Móvil  :f4s7, after f3s6, 5d
@@ -79,33 +75,37 @@ gantt
     section Fase 5: Excelencia
     Sprint 9 - Auditorías 5S + Actions   :f5s9, after f4s8, 5d
     Sprint 10 - Kanban + VSM             :f5s10, after f5s9, 5d
+
+    section Transversal
+    PlantaEditor (Fabric.js)             :pe, after f1s2, 20d
 ```
 
 > [!NOTE]
-> Sprint 5.5 (Capacidad) se ejecuta en paralelo con Sprint 6 (Cronometraje) dado que
-> el `CapacityEngine` ya tiene implementación base. La duración total estimada es **~12 semanas**
-> para el alcance MVP, o **~16 semanas** si se incluyen features Full.
+> Sprint 5.5 (Capacidad) se ejecuta en paralelo con Sprint 6 (Cronometraje).
+> **PlantaEditor** es un módulo transversal que se construye incrementalmente a lo largo de las fases.
+> Duración total estimada: **~12 semanas** (MVP) o **~16 semanas** (Full).
 
 ---
 
-### [FASE 1: Fundamentos y Datos Maestros](FASE_1_FUNDAMENTOS.md)
-> **Semana 1-2**
+### [FASE 1: Fundamentos y Datos Maestros](FASE_1_FUNDAMENTOS.md) ✅
+> **Semana 1-2** — Completada 2026-02-23
 > Establecimiento del "Sistema Nervioso" del proyecto.
-- **Backend**: Configuración FastAPI, SQLModel Recursivo (Árbol de Activos), **JWT Auth Middleware**.
-- **Frontend**: Layout Corporativo, Navegador de Planta (Sidebar), SPA Router, **[Editor de Planos Interactivo (PlantaEditor)](PLANT_EDITOR.md)**.
-- **Testing**: Setup pytest (backend) + Vitest (frontend).
+- **Backend**: FastAPI + SQLModel + JWT Auth + RBAC. API CRUD `/assets` con jerarquía recursiva, breadcrumbs, ciclo-detection. **20 tests pasando.**
+- **Frontend**: Vite + Vanilla JS. Login, Navbar, Sidebar, AssetDetail, SPA Hash Router. **5 tests pasando.**
+- **Testing**: pytest (SQLite in-memory) + Vitest (jsdom). **25 tests totales.**
 
-### [FASE 2: Motor Documental](FASE_2_DOCUMENTAL.md)
-> **Semana 3-4**
+### [FASE 2: Motor Documental](FASE_2_DOCUMENTAL.md) ✅
+> **Semana 3-4** — Completada 2026-02-24
 > Digitalización del "Know-How" (SOPs, LUPs).
-- **Backend**: Ingesta de Templates Markdown, Almacenamiento JSON.
-- **Frontend**: Integración de **Editor.js**, Renderizado dinámico de formatos.
+- **Backend**: Ingestión de 62 templates MD desde `ie_formats/`, CRUD documentos JSON, JOIN template↔document. **27 tests backend (acumulado).**
+- **Frontend**: Editor.js v2.30.8 + 8 plugins vía CDN. TemplateSelector (grid por categoría), EditorCanvas (guardar → API), Markdown→Bloques parser. **Build exitoso (15 módulos, 32.89 KB JS).**
 
-### [FASE 3: Motor de Ingeniería Avanzada](FASE_3_INGENIERIA.md)
-> **Semana 5-6**
+### [FASE 3: Motor de Ingeniería Avanzada](FASE_3_INGENIERIA.md) 🔄
+> **Semana 5-6** — Sprint 5 ✅ Completado 2026-02-25
 > Medición, Estandarización (Metodología Nievel), Capacidad y Modelado de Restricciones.
-- **Backend**: Lógica de "Triada", **Motor de Capacidad Jerárquica (Rollup Automático)**, Grafos de Precedencia (NetworkX).
-- **Frontend**: Cronómetro Digital (con conteo de unidades), Configuración de Puestos (Manuales/Mecánicos), Calculadora de Tripulación (Staffing), **Muestreo de Trabajo**.
+- **Sprint 5 ✅**: CRUD Triada (Activo+Actividad+SKU), Catálogos Maestros, Frontend Ingeniería. **11 tests.**
+- **Sprint 5.5**: Motor de Capacidad + Staffing Calculator.
+- **Sprint 6**: Cronómetro Digital Preconfigurable + Muestreo.
 
 ### [FASE 4: Control de Piso y Captura Móvil](FASE_4_EJECUCION.md)
 > **Semana 7-8**
@@ -119,50 +119,58 @@ gantt
 - **Backend**: Action Tracker, Scoring de Auditorías, Calculadora Kanban.
 - **Frontend**: Canvas VSM interactivo, Gráficos Radar 5S, Tableros Kanban.
 
+### [Módulo Transversal: PlantaEditor](PLANT_EDITOR.md)
+> **Desarrollo incremental** a lo largo de las fases.
+> Editor interactivo de planos de planta con capas funcionales (Fabric.js + D3.js).
+- **Core**: Canvas Fabric.js con importación SVG/Draw.io, LayerManager, zoom/pan.
+- **Capas**: Base (plano fondo), Zonas (polígonos), Assets (máquinas vinculadas), Connections (flujos), Heatmaps.
+- **Data**: Vinculación Shape ↔ Asset ID, persistencia JSON (DB o archivo).
+
 ---
 
-## 🛠️ 3. Arquitectura Técnica (Referencia)
+## 🛠️ 3. Arquitectura Técnica
 
 ### Backend (Puerto 9003)
 *   **Framework**: FastAPI.
-*   **BD**: SQL Server (`Takta`) / SQLite (dev/Community).
+*   **BD**: SQL Server (Enterprise) / SQLite (dev/Community).
 *   **Auth**: JWT + Role middleware (`admin`, `engineer`, `supervisor`, `viewer`).
-*   **API Modules**: `assets`, `engineering` (Time/Capacity), `execution` (Staff/Logs), `ci`, `audits`, `logistics`, `plant_layouts`.
+*   **API Modules**: `assets`, `templates`, `documents`, `engineering` (Time/Capacity), `execution` (Staff/Logs), `ci`, `audits`, `logistics`, `plant_layouts`.
 
-### Frontend (Dual Strategy)
-*   **Open Source**: TailwindCSS v3.4+ + Vanilla JS (Moderno, Ligero).
-*   **Enterprise**: Bios Design System (Bootstrap) (Corporativo).
-*   **Common Core**: La lógica de negocio JS se comparte donde es posible.
+### Frontend
+*   **Stack**: TailwindCSS + Vanilla JS (Moderno, Ligero).
 *   **Build Tool**: Vite (HMR en dev, optimized bundle en prod).
+*   **Diseño**: Filosofía "Modern Industrial Glass" — ver [Guía de Diseño](../../frontend/guia_diseno.md).
 *   **Mobile**: PWA / Touch-optimized views for Analysts.
-*   **Integraciones Visuales**: Renderizado de Mapas `draw.io` con Capas (Layers) de información (Calor, Estado).
-*   Componentes Clave: `AssetTree`, `DocumentEditor`, `VSMCanvas`, `StaffingCalculator`, `PlantMapViewer`.
+*   **Integraciones Visuales**: Editor.js (documentos), Fabric.js (mapas de planta), D3.js (heatmaps), Chart.js (radar/stats).
+*   **Componentes Clave**: `AssetTree`, `DocumentEditor`, `TimingStopwatch`, `StaffingCalculator`, `PlantaEditor`, `VSMCanvas`.
 
 ---
 
 ## 🧪 4. Estrategia de Testing
 
-| Capa | Herramienta | Nivel |
-|------|-------------|-------|
-| **Backend API** | `pytest` + `httpx` (AsyncClient) | Unit + Integration |
-| **Frontend** | `Vitest` | Unit (services, utils) |
-| **E2E** | Browser subagent / Manual | Flujos críticos |
+| Capa | Herramienta | Nivel | Estado Actual |
+|------|-------------|-------|---------------|
+| **Backend API** | `pytest` + `httpx` | Unit + Integration | **38 tests ✅** |
+| **Frontend** | `Vitest` (`jsdom`) | Unit (services, utils) | **5 tests ✅** |
+| **Build** | `vite build` | Compilación producción | **15 módulos ✅** |
+| **E2E** | Browser subagent / Manual | Flujos críticos | Parcial |
 
 - **Infraestructura**: BD SQLite en memoria para tests (fixture `conftest.py`).
 - **CI**: Ejecutar `pytest` y `vitest run` en cada push.
 - **Tests mínimos por sprint**: Cada sprint debe entregar al menos 3 tests de API.
+- **Cobertura actual**: 43 tests totales (38 backend + 5 frontend).
 
 ---
 
 ## 📦 5. Estrategia de Migración y Seeding
 
 ### Datos iniciales (Seed)
-| Datos | Fuente | Script |
-|-------|--------|--------|
-| Sedes y Plantas | Manual | `seed_capacity_data.py` ✅ |
-| Catálogo de Actividades | Excel existente | Por crear |
-| Catálogo de Referencias (SKU) | **SIESA** via MCP | Endpoint `/api/engineering/sync-references` |
-| Templates de Formatos | Carpeta `ie_formats/` | Endpoint `/api/documents/templates/ingest` |
+| Datos | Fuente | Script | Estado |
+|-------|--------|--------|--------|
+| Sedes y Plantas | Manual | `seed_capacity_data.py` | ✅ |
+| Catálogo de Actividades | Excel existente | Por crear | ⬜ |
+| Catálogo de Referencias (SKU) | **SIESA** via MCP | Endpoint `/api/engineering/sync-references` | ⬜ |
+| Templates de Formatos | Carpeta `ie_formats/` | `POST /api/templates/ingest` | ✅ 62 templates |
 
 ### Migración de datos legacy
 - **No hay BD legacy** que migrar directamente.
@@ -203,4 +211,4 @@ cd frontend && npm run build  # -> dist/
 3.  **Usabilidad**: Carga del Árbol < 1s.
 4.  **Seguridad**: Todo endpoint protegido por JWT. Roles aplicados.
 5.  **Testabilidad**: `pytest` pasa en CI para cada sprint entregado.
-
+6.  **Transferibilidad**: La lógica core es agnóstica del sector (manufactura ↔ servucción).

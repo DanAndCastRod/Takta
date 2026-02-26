@@ -1,103 +1,120 @@
-import './style.css'
-import './themes/community/glassmorphism.css';
-import './themes/enterprise/bios-adapter.css';
-import { TaktaTheme } from './themes/theme-manager.js';
-import { TaktaLayout } from './themes/enterprise/layout-wrapper.js';
-import { PlantEditor } from './components/plant-editor/PlantEditor.js';
+import './style.css';
+import ApiClient from './services/api.client.js';
+import Router from './router.js';
 
-// Estado de la navegación
-let currentView = 'themes'; // 'themes' | 'editor'
+// Components
+import Navbar from './components/layout/Navbar.js';
+import Sidebar from './components/layout/Sidebar.js';
 
-// SVG Icons for navigation
-const NAV_ICONS = {
-  palette: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z"/></svg>`,
-  factory: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>`
-};
+// Pages
+import LoginPage from './pages/Login.js';
+import DocumentEditorPage from './pages/DocumentEditorPage.js';
+import EngineeringPage from './pages/EngineeringPage.js';
+import TimingPage from './pages/TimingPage.js';
+import CapacityPage from './pages/CapacityPage.js';
 
-const renderNavigation = () => {
-  return `
-        <nav class="mb-4 flex gap-2 border-b border-slate-200 pb-3">
-            <button id="nav-themes" class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${currentView === 'themes' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50'}">
-                ${NAV_ICONS.palette} Theme System
-            </button>
-            <button id="nav-editor" class="flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${currentView === 'editor' ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-600 hover:bg-slate-50'}">
-                ${NAV_ICONS.factory} Plant Editor
-            </button>
-        </nav>
-    `;
-};
+class App {
+  constructor() {
+    this.user = null;
+    this.navbar = new Navbar();
+    this.sidebar = new Sidebar();
+    this.router = null;
 
+    // Listeners for Auth Events
+    window.addEventListener('auth:logout', () => this.handleLogout());
+    window.addEventListener('auth:unauthorized', () => this.handleLogout());
+    window.addEventListener('auth:login_success', () => this.init());
 
-// Vistas
-const renderThemeDemo = (container) => {
-  container.innerHTML = `
-        ${renderNavigation()}
-        <div class="tk-card glass mb-4">
-            <h1 class="text-3xl font-bold mb-2">Takta Theme System</h1>
-            <div class="flex gap-2 mb-4">
-                <button id="btn-community" class="tk-btn-primary">Switch to Community</button>
-                <button id="btn-enterprise" class="tk-btn-primary">Switch to Enterprise</button>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="tk-card">
-                <h2 class="text-xl font-bold">Tarjeta Estándar</h2>
-                <p>Contenido de prueba para validar estilos.</p>
-            </div>
-            <div class="tk-card glass">
-                <h2 class="text-xl font-bold">Tarjeta Glass</h2>
-                <p>Este componente debe tener efecto blur en modo Community.</p>
-            </div>
-        </div>
-    `;
-  bindNavEvents();
-  document.getElementById('btn-community').addEventListener('click', () => switchTheme('community'));
-  document.getElementById('btn-enterprise').addEventListener('click', () => switchTheme('enterprise'));
-};
-
-const renderEditorView = (container) => {
-  container.innerHTML = `
-        ${renderNavigation()}
-        <div id="plant-editor-root" class="h-[80vh] w-full border border-gray-300 rounded shadow-sm bg-white"></div>
-    `;
-  bindNavEvents();
-
-  // Iniciar Editor
-  const editor = new PlantEditor('plant-editor-root');
-  editor.render();
-};
-
-const bindNavEvents = () => {
-  document.getElementById('nav-themes').addEventListener('click', () => navigate('themes'));
-  document.getElementById('nav-editor').addEventListener('click', () => navigate('editor'));
-};
-
-const navigate = (view) => {
-  currentView = view;
-  renderCurrentView();
-};
-
-const renderCurrentView = () => {
-  const themeName = TaktaTheme.get();
-  if (themeName === 'enterprise') {
-    TaktaLayout.renderEnterpriseStructure((container) => {
-      if (currentView === 'themes') renderThemeDemo(container);
-      else renderEditorView(container);
-    });
-  } else {
-    TaktaLayout.renderCommunityStructure((container) => {
-      if (currentView === 'themes') renderThemeDemo(container);
-      else renderEditorView(container);
-    });
+    this.init();
   }
-};
 
-const switchTheme = (themeName) => {
-  TaktaTheme.set(themeName);
-  renderCurrentView();
+  async init() {
+    // 1. Check if token exists
+    const token = localStorage.getItem('takta_token');
+
+    if (!token) {
+      // Not authenticated, render only navbar without user
+      this.navbar.render(null);
+      this.sidebar.render(null);
+      this.initRouter(false);
+      return;
+    }
+
+    // 2. Validate token and get user info
+    try {
+      const userData = await ApiClient.get('/auth/me');
+      this.user = userData;
+
+      // Render authenticated shell
+      this.navbar.render(this.user);
+      this.sidebar.render(this.user);
+      this.sidebar.updateActiveLink(); // Force active link state
+      this.initRouter(true);
+
+    } catch (error) {
+      console.error('Failed to validate session', error);
+      this.handleLogout(false); // remove token without infinite loops
+    }
+  }
+
+  handleLogout(redirect = true) {
+    this.user = null;
+    this.navbar.render(null);
+    this.sidebar.render(null);
+    if (redirect) {
+      window.location.hash = '/login';
+    }
+  }
+
+  initRouter(isAuthenticated) {
+    // Define routes based on Auth state
+    let routes = {};
+
+    if (!isAuthenticated) {
+      routes = {
+        '/login': LoginPage,
+        '*': () => {
+          // Redirect everything else to login if not authenticated
+          window.location.hash = '/login';
+          return '';
+        }
+      };
+    } else {
+      routes = {
+        '/': () => `<div class="p-6">
+                    <h1 class="text-2xl font-bold text-slate-900">Dashboard</h1>
+                    <p class="text-slate-600 mt-2">Bienvenido, ${this.user.username}. Sistema OAC-SEO activado.</p>
+                </div>`,
+        '/assets': () => `<div class="p-6">
+                    <h1 class="text-2xl font-bold text-slate-900">Módulo de Activos</h1>
+                    <p class="text-slate-600 mt-2">Por implementar...</p>
+                </div>`,
+        '/engineering': EngineeringPage,
+        '/timing': TimingPage,
+        '/capacity': CapacityPage,
+        '/editor': DocumentEditorPage,
+        '/login': () => {
+          // Already logged in, redirect to home
+          window.location.hash = '/';
+          return '';
+        },
+        '*': () => `<div class="p-8 text-center text-slate-500">404 - Not Found</div>`
+      };
+    }
+
+    // Initialize Router
+    if (this.router) {
+      // Overwrite routes on existing router to prevent leaks
+      this.router.routes = routes;
+      this.router.handleRoute();
+    } else {
+      this.router = new Router(routes);
+      this.router.start();
+    }
+  }
 }
 
-// Inicialización
-TaktaTheme.init();
-renderCurrentView();
+// Bootstrap application when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  window.app = new App();
+});

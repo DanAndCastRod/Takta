@@ -1,7 +1,7 @@
 # FASE 5: Excelencia Operacional (Lean & Calidad)
 
 > **Estado**: Pendiente (Depende de Fase 4)
-> **Objetivo**: Herramientas visuales y logísticas (Kanban, 5S, VSM).
+> **Objetivo**: Herramientas visuales y logísticas para Mejora Continua (Kaizen, Kanban, 5S, VSM). Ver [Funcionalidades Clave](FUNCIONALIDADES_CLAVE.md) Sec. 7.
 
 ---
 

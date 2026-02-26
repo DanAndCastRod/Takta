@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 import uvicorn
 from .db import init_db
-from .api.routers import assets, capacity, auth
+from .api.routers import assets, capacity, auth, templates, documents
 from .api import engineering, ci, audits, logistics, plant_layouts
 
 app = FastAPI(
@@ -33,6 +33,8 @@ def read_root():
 # --- Routers ---
 app.include_router(auth.router)
 app.include_router(assets.router)
+app.include_router(templates.router)
+app.include_router(documents.router)
 app.include_router(engineering.router)
 app.include_router(ci.router)
 app.include_router(audits.router)
@@ -41,5 +43,5 @@ app.include_router(plant_layouts.router)
 app.include_router(capacity.router)
 
 if __name__ == "__main__":
-    uvicorn.run("backend.app.main:app", host="0.0.0.0", port=9003, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=9003, reload=True)
 

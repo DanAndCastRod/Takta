@@ -1,13 +1,64 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>Takta (OAC-SEO)</title>
+  <style>
+    /* Editor.js Canvas Styles */
+    .codex-editor {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .ce-header {
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    .ce-toolbar__plus,
+    .ce-toolbar__settings-btn {
+      color: #3b82f6;
+    }
+
+    .ce-block__content {
+      max-width: 780px;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 h-screen flex flex-col overflow-hidden">
+  <!-- Navbar Container -->
+  <header id="app-navbar" class="flex-none z-10 sticky top-0"></header>
+
+  <!-- Main layout: Sidebar + Content -->
+  <div class="flex flex-1 overflow-hidden">
+    <!-- Sidebar Container -->
+    <aside id="app-sidebar"
+      class="flex-none hidden w-64 border-r border-slate-200 bg-white flex-col transition-all duration-300">
+    </aside>
+
+    <!-- Main Content Area -->
+    <main id="app-content" class="flex-1 overflow-y-auto bg-slate-50 relative"></main>
+  </div>
+
+  <!-- Editor.js Core & Plugins (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2.30.8/dist/editorjs.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@2.8.8/dist/header.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@2.0.2/dist/list.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@2.4.3/dist/table.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@1.4.0/dist/bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@1.4.2/dist/bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/simple-image@1.6.0/dist/bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@2.7.6/dist/bundle.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@1.4.0/dist/bundle.js"></script>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
 </html>

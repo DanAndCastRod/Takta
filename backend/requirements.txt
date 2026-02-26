@@ -7,3 +7,4 @@ python-jose[cryptography]
 passlib[bcrypt]
 httpx<0.28
 pytest
+python-multipart

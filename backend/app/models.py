@@ -72,32 +72,90 @@ class ProcessStandard(SQLModel, table=True):
     
     time_studies: List["TimeStudy"] = Relationship(back_populates="process_standard")
 
+    # Sprint 5.5: Capacity unit parameterization
+    capacity_unit: Optional[str] = None  # "kg/h", "und/h", "cajas/h"
 
-# --- Engineering: Time Studies ---
+
+# --- Engineering: Time Studies (Sprint 6 — Element-Based Design) ---
 
 class TimeStudy(SQLModel, table=True):
+    """
+    A pre-configured time study linked to a standard (Triad).
+    Contains pre-mapped elements that define the cycle sequence.
+    """
     id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
-    process_standard_id: uuid.UUID = Field(foreign_key="processstandard.id")
-    
+    process_standard_id: Optional[uuid.UUID] = Field(default=None, foreign_key="processstandard.id")
+
+    name: str  # "Estudio Línea Sellado - Pechuga"
     analyst_name: str
+    study_type: str = "continuous"  # 'continuous' | 'snap_back' | 'work_sampling'
     study_date: datetime = Field(default_factory=datetime.utcnow)
-    
-    observed_time_avg: float
-    rating_factor: float = 1.0 
-    allowance_factor: float = 0.0 
-    calculated_standard_time: float
+    status: str = "draft"  # 'draft' | 'in_progress' | 'completed'
 
-    process_standard: ProcessStandard = Relationship(back_populates="time_studies")
-    cycles: List["TimeStudyCycle"] = Relationship(back_populates="time_study")
+    # Calculation config
+    rating_factor: float = 1.0       # Performance rating (0.8 - 1.2)
+    supplements_pct: float = 0.0     # % allowances (fatigue, personal needs)
+    confidence_level: float = 0.95   # 95% or 99%
 
-class TimeStudyCycle(SQLModel, table=True):
+    # Calculated results (filled after completion)
+    calculated_normal_time: Optional[float] = None
+    calculated_standard_time: Optional[float] = None
+
+    # Relationships
+    process_standard: Optional[ProcessStandard] = Relationship(back_populates="time_studies")
+    elements: List["TimingElement"] = Relationship(back_populates="time_study")
+    sessions: List["TimingSession"] = Relationship(back_populates="time_study")
+
+
+class TimingElement(SQLModel, table=True):
+    """
+    A pre-mapped element of the work cycle (e.g., 'Carga MP', 'Inspección').
+    Defines the sequence the stopwatch will follow.
+    """
     id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     time_study_id: uuid.UUID = Field(foreign_key="timestudy.id")
-    cycle_number: int
-    time_observed: float
-    is_abnormal: bool = False # Outlier identification
 
-    time_study: TimeStudy = Relationship(back_populates="cycles")
+    name: str                        # "Carga de materia prima"
+    type: str = "operation"          # 'operation' | 'transport' | 'inspection' | 'delay' | 'storage'
+    is_cyclic: bool = True           # Repeats every cycle?
+    order: int                       # Sequence within cycle (1, 2, 3...)
+
+    time_study: TimeStudy = Relationship(back_populates="elements")
+    laps: List["TimingLap"] = Relationship(back_populates="element")
+
+
+class TimingSession(SQLModel, table=True):
+    """
+    A field recording session (one visit to the plant floor).
+    """
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    time_study_id: uuid.UUID = Field(foreign_key="timestudy.id")
+
+    started_at: datetime = Field(default_factory=datetime.utcnow)
+    ended_at: Optional[datetime] = None
+    notes: Optional[str] = None
+
+    time_study: TimeStudy = Relationship(back_populates="sessions")
+    laps: List["TimingLap"] = Relationship(back_populates="session")
+
+
+class TimingLap(SQLModel, table=True):
+    """
+    Individual timing record: one observation of one element in one cycle.
+    """
+    id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    session_id: uuid.UUID = Field(foreign_key="timingsession.id")
+    element_id: uuid.UUID = Field(foreign_key="timingelement.id")
+
+    cycle_number: int                # Which cycle (1, 2, 3...)
+    split_time_ms: float             # Time for this element only (ms)
+    lap_time_ms: Optional[float] = None  # Cumulative time since cycle start
+    units_count: int = 1             # Items produced in this observation
+    is_abnormal: bool = False        # Marked as outlier
+    notes: Optional[str] = None
+
+    session: TimingSession = Relationship(back_populates="laps")
+    element: TimingElement = Relationship(back_populates="laps")
 
 
 # --- Continuous Improvement (Action Tracking) ---
