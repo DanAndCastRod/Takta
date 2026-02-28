@@ -3,6 +3,7 @@
 > **Estado**: Completada (MVP) ✅
 > **Objetivo**: Digitalizar la creación de documentación (SOPs, LUPs) usando Editor.js.
 > **Fecha de Cierre**: 2026-02-24
+> **Última Auditoría**: 2026-02-27
 
 ---
 
@@ -34,18 +35,18 @@
     - [x] `GET /api/documents/asset/{asset_id}`: Lista documentos asociados a un activo (incluye nombre del template vía JOIN).
     - [ ] `GET /api/documents/{id}/render`: Retornar HTML/Markdown. *(Full, pendiente)*
 - **🧪 Testing**:
-    - [x] Tests de ingestión de templates (creación y actualización).
-    - [x] Tests de CRUD de documentos (creación, recuperación, listado por activo).
-    - [x] **27 tests backend pasando (acumulado, 100% cobertura).**
+    - [x] Tests de ingestión de templates (`test_templates.py`).
+    - [x] Tests de CRUD de documentos (`test_documents.py`).
+    - [x] Tests pasando (cobertura funcional de templates + documents).
 
 ### 📁 Archivos Implementados
 
-| Archivo | Ruta | Descripción |
-|---------|------|-------------|
-| `templates.py` | `backend/app/api/routers/templates.py` | Router ingesta + listado templates |
-| `documents.py` | `backend/app/api/routers/documents.py` | Router CRUD documentos |
-| `test_templates.py` | `backend/tests/test_templates.py` | Tests de ingesta |
-| `test_documents.py` | `backend/tests/test_documents.py` | Tests de documentos |
+| Archivo | Ruta | Estado |
+|---------|------|--------|
+| `templates.py` | `backend/app/api/routers/templates.py` | ✅ Verificado |
+| `documents.py` | `backend/app/api/routers/documents.py` | ✅ Verificado |
+| `test_templates.py` | `backend/tests/test_templates.py` | ✅ Verificado |
+| `test_documents.py` | `backend/tests/test_documents.py` | ✅ Verificado |
 
 ---
 
@@ -71,7 +72,7 @@
 - **Infraestructura**:
     - [x] CDN de Editor.js v2.30.8 + 8 plugins inyectados en `index.html`.
     - [x] `editor.config.js`: Configuración centralizada de herramientas + i18n español.
-    - [x] `markdownToBlocks.js`: Parser Markdown → Bloques (headers h1-h6, listas, tablas, deliminadores, párrafos).
+    - [x] `markdownToBlocks.js`: Parser Markdown → Bloques (headers h1-h6, listas, tablas, delimitadores, párrafos).
 - **Componentes UI**:
     - [x] `TemplateSelector.js`: Grid de tarjetas agrupadas por categoría (BPM, Lean, TPM, 6S, Kaizen, Kanban). Fetch desde `/api/templates/`.
     - [x] `EditorCanvas.js`: Wrapper Editor.js con cabecera (template name, asset name, botón volver), lienzo de edición, y botón flotante 💾 con estados (saving → success → reset).
@@ -81,27 +82,27 @@
     - [x] `main.js`: Ruta `/editor` registrada en router autenticado.
     - [x] `AssetDetail.js`: Botón **+ Nuevo Documento** en cabecera del activo (navega a `#/editor?assetId={id}`).
 - **Build**:
-    - [x] **Vite build exitoso**: 15 módulos, 32.89 KB JS (gzipped: 8.67 KB).
+    - [x] Vite build funcional (producción).
 
 ### 📁 Archivos Creados
 
-| Archivo | Ruta | Descripción |
-|---------|------|-------------|
-| `markdownToBlocks.js` | `frontend/src/services/markdownToBlocks.js` | Parser MD → Editor.js blocks |
-| `editor.config.js` | `frontend/src/services/editor.config.js` | Config tools + i18n |
-| `TemplateSelector.js` | `frontend/src/components/editor/TemplateSelector.js` | Grid de plantillas |
-| `EditorCanvas.js` | `frontend/src/components/editor/EditorCanvas.js` | Lienzo Editor.js |
-| `DocumentEditorPage.js` | `frontend/src/pages/DocumentEditorPage.js` | Página del editor |
+| Archivo | Ruta | Estado |
+|---------|------|--------|
+| `markdownToBlocks.js` | `frontend/src/services/markdownToBlocks.js` | ✅ Verificado |
+| `editor.config.js` | `frontend/src/services/editor.config.js` | ✅ Verificado |
+| `TemplateSelector.js` | `frontend/src/components/editor/TemplateSelector.js` | ✅ Verificado |
+| `EditorCanvas.js` | `frontend/src/components/editor/EditorCanvas.js` | ✅ Verificado |
+| `DocumentEditorPage.js` | `frontend/src/pages/DocumentEditorPage.js` | ✅ Verificado |
 
 ### 📁 Archivos Modificados
 
-| Archivo | Cambio |
-|---------|--------|
-| `index.html` | CDN scripts Editor.js + estilos canvas |
-| `router.js` | Query params en hash routing |
-| `main.js` | Ruta `/editor` |
-| `AssetDetail.js` | Botón `+ Nuevo Documento` |
-| `api.client.js` | Base URL corregida a `/api` (proxy Vite) |
+| Archivo | Cambio | Estado |
+|---------|--------|--------|
+| `index.html` | CDN scripts Editor.js + estilos canvas | ✅ Verificado |
+| `router.js` | Query params en hash routing | ✅ Verificado |
+| `main.js` | Ruta `/editor` | ✅ Verificado |
+| `AssetDetail.js` | Botón `+ Nuevo Documento` | ✅ Verificado |
+| `api.client.js` | Base URL corregida a `/api` (proxy Vite) | ✅ Verificado |
 
 ### 🔄 Flujo de Creación de Documento
 
@@ -122,15 +123,23 @@ flowchart LR
 |----------|-----------|
 | Usuario puede crear un SOP desde una plantilla | ✅ |
 | El documento guarda el ID del activo correctamente | ✅ |
-| Build de producción exitoso | ✅ 15 módulos, 0 errores |
+| Build de producción exitoso | ✅ |
 
 ---
 
 ## 📌 Items Pendientes (Full Scope)
 
-| Item | Sprint Sugerido |
-|------|-----------------|
-| `GET /documents/{id}/render` (HTML/Markdown) | Sprint 5+ |
-| Inyección de Variables (`{{asset_name}}`) | Sprint 5+ |
-| Auto-save periódico | Sprint 5+ |
-| Subida de imágenes | Sprint 5+ |
+| Item | Estado | Sprint Sugerido |
+|------|--------|-----------------|
+| `GET /documents/{id}/render` (HTML/Markdown) | ⬜ Pendiente | Sprint 7+ |
+| Inyección de Variables (`{{asset_name}}`) | ⬜ Pendiente | Sprint 7+ |
+| Auto-save periódico | ⬜ Pendiente | Sprint 7+ |
+| Subida de imágenes | ⬜ Pendiente | Sprint 7+ |
+
+## 📊 Métricas (al cierre de auditoría)
+
+| Métrica | Valor |
+|---------|-------|
+| Backend tests acumulados | **47 passed** |
+| Frontend tests acumulados | **5 passed** |
+| Total tests proyecto | **52** |

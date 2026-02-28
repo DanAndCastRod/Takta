@@ -30,10 +30,21 @@ class ApiClient {
     }
 
     /**
+     * Normalize endpoint path:
+     *   - Strip trailing slashes (except bare "/")
+     *   - This prevents FastAPI 307 redirects that break the Vite proxy
+     */
+    static normalizePath(endpoint) {
+        if (!endpoint || endpoint === '/') return endpoint;
+        return endpoint.replace(/\/+$/, '');
+    }
+
+    /**
      * Core request method
      */
     static async request(endpoint, options = {}) {
-        const url = `${API_BASE_URL}${endpoint}`;
+        const normalizedEndpoint = this.normalizePath(endpoint);
+        const url = `${API_BASE_URL}${normalizedEndpoint}`;
         const headers = this.getHeaders(options.headers);
 
         try {

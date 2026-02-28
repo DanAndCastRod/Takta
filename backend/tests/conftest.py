@@ -1,6 +1,9 @@
 """
 Pytest fixtures for Takta API tests.
 Uses SQLite in-memory database for isolation and speed.
+
+Uses db.set_engine() / db.reset_engine() for proper test isolation
+instead of relying on module-level globals.
 """
 import pytest
 from fastapi.testclient import TestClient
@@ -8,24 +11,33 @@ from sqlmodel import SQLModel, create_engine, Session
 from sqlmodel.pool import StaticPool
 
 from backend.app.main import app
-from backend.app.db import get_session
+from backend.app.db import get_session, set_engine, reset_engine
 from backend.app.core.security import create_access_token
 
 
 # --- Database Fixture ---
 
-@pytest.fixture(name="session")
+@pytest.fixture(name="session", autouse=False)
 def session_fixture():
-    """Create a fresh in-memory SQLite database for each test."""
+    """
+    Create a fresh in-memory SQLite database for each test.
+    Injects it into the db module via set_engine() so that
+    init_db() and get_session() use the test database.
+    """
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
+    # Inject test engine into db module
+    set_engine(engine)
     SQLModel.metadata.create_all(engine)
-    
+
     with Session(engine) as session:
         yield session
+
+    # Clean up: reset engine so subsequent tests get fresh state
+    reset_engine()
 
 
 @pytest.fixture(name="client")
@@ -36,7 +48,7 @@ def client_fixture(session: Session):
     """
     def get_session_override():
         yield session
-    
+
     app.dependency_overrides[get_session] = get_session_override
     client = TestClient(app)
     yield client

@@ -4,11 +4,12 @@ class AssetTree {
     constructor(container) {
         this.container = container;
         this.treeData = [];
+        this.searchTerm = '';
     }
 
     async load() {
         try {
-            this.treeData = await ApiClient.get('/assets/tree/');
+            this.treeData = await ApiClient.get('/assets/tree');
             this.render();
         } catch (error) {
             console.error('Failed to load asset tree', error);
@@ -20,20 +21,117 @@ class AssetTree {
     }
 
     render() {
+        this.container.innerHTML = '';
+
+        // ── Search Bar ──
+        const searchWrapper = document.createElement('div');
+        searchWrapper.className = 'mb-2 relative';
+        searchWrapper.innerHTML = `
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input id="asset-search" type="text" placeholder="Buscar activo..."
+                class="w-full pl-8 pr-8 py-1.5 text-xs border border-slate-200 rounded-lg bg-white
+                       focus:outline-none focus:ring-2 focus:ring-orange-400/40 focus:border-orange-400
+                       text-slate-700 placeholder-slate-400 transition-all" />
+            <button id="asset-search-clear"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 hidden cursor-pointer"
+                title="Limpiar búsqueda">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        `;
+        this.container.appendChild(searchWrapper);
+
+        const searchInput = searchWrapper.querySelector('#asset-search');
+        const clearBtn = searchWrapper.querySelector('#asset-search-clear');
+
+        searchInput.value = this.searchTerm;
+        clearBtn.classList.toggle('hidden', !this.searchTerm);
+
+        // Debounced search
+        let debounceTimer;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                this.searchTerm = e.target.value.trim().toLowerCase();
+                clearBtn.classList.toggle('hidden', !this.searchTerm);
+                this._renderTree();
+            }, 200);
+        });
+
+        clearBtn.addEventListener('click', () => {
+            this.searchTerm = '';
+            searchInput.value = '';
+            clearBtn.classList.add('hidden');
+            this._renderTree();
+            searchInput.focus();
+        });
+
+        // ── Tree Container ──
+        const treeWrapper = document.createElement('div');
+        treeWrapper.id = 'asset-tree-nodes';
+        this.container.appendChild(treeWrapper);
+
+        this._renderTree();
+    }
+
+    _renderTree() {
+        const treeWrapper = this.container.querySelector('#asset-tree-nodes');
+        if (!treeWrapper) return;
+        treeWrapper.innerHTML = '';
+
         if (!this.treeData || this.treeData.length === 0) {
-            this.container.innerHTML = '<div class="p-4 text-sm text-slate-500 text-center">No hay activos registrados.</div>';
+            treeWrapper.innerHTML = '<div class="p-4 text-sm text-slate-500 text-center">No hay activos registrados.</div>';
+            return;
+        }
+
+        // If search is active, filter the tree
+        const dataToRender = this.searchTerm
+            ? this._filterTree(this.treeData, this.searchTerm)
+            : this.treeData;
+
+        if (this.searchTerm && dataToRender.length === 0) {
+            treeWrapper.innerHTML = `
+                <div class="p-4 text-center">
+                    <p class="text-sm text-slate-400">No se encontraron activos para</p>
+                    <p class="text-sm font-medium text-slate-500 mt-1">"${this._escapeHtml(this.searchTerm)}"</p>
+                </div>`;
             return;
         }
 
         const ul = document.createElement('ul');
         ul.className = 'space-y-1 ml-1';
 
-        this.treeData.forEach(node => {
+        dataToRender.forEach(node => {
             ul.appendChild(this.createNodeElement(node, 0));
         });
 
-        this.container.innerHTML = '';
-        this.container.appendChild(ul);
+        treeWrapper.appendChild(ul);
+    }
+
+    /**
+     * Recursively filter tree nodes: keep a node if its name matches
+     * OR if any descendant matches (show path to match).
+     */
+    _filterTree(nodes, term) {
+        const result = [];
+        for (const node of nodes) {
+            const nameMatches = node.name.toLowerCase().includes(term);
+            const filteredChildren = node.children && node.children.length > 0
+                ? this._filterTree(node.children, term)
+                : [];
+
+            if (nameMatches || filteredChildren.length > 0) {
+                result.push({
+                    ...node,
+                    children: filteredChildren,
+                    _matchesSelf: nameMatches,  // flag to highlight
+                });
+            }
+        }
+        return result;
     }
 
     createNodeElement(node, level = 0) {
@@ -49,7 +147,7 @@ class AssetTree {
         toggleSpan.className = 'w-5 h-5 flex items-center justify-center mr-1 text-slate-400 font-bold';
         if (hasChildren) {
             toggleSpan.innerHTML = `
-                <svg class="w-3.5 h-3.5 transition-transform duration-200 -rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="w-3.5 h-3.5 transition-transform duration-200 ${this.searchTerm ? '' : '-rotate-90'}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             `;
@@ -73,12 +171,16 @@ class AssetTree {
         typeIcon.className = 'w-5 h-5 flex-shrink-0 mr-2 text-blue-500';
         typeIcon.innerHTML = this.getIconForType(node.type);
 
-        // Label
+        // Label (with highlight if searching)
         const labelText = document.createElement('span');
         labelText.className = 'text-sm font-medium text-slate-700 select-none truncate';
-        labelText.textContent = node.name;
+        if (this.searchTerm && node._matchesSelf) {
+            labelText.innerHTML = this._highlightMatch(node.name, this.searchTerm);
+        } else {
+            labelText.textContent = node.name;
+        }
 
-        // Asset Type badge (hidden on very small viewports)
+        // Asset Type badge
         const typeBadge = document.createElement('span');
         typeBadge.className = 'ml-auto text-[10px] font-semibold text-slate-400 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded hidden sm:inline-block';
         typeBadge.textContent = node.type.substring(0, 3);
@@ -90,11 +192,9 @@ class AssetTree {
 
         // Selection Handler
         div.addEventListener('click', () => {
-            // Remove active style from all nodes
             document.querySelectorAll('.asset-node-active').forEach(el => el.classList.remove('asset-node-active', 'bg-blue-50'));
             div.classList.add('asset-node-active', 'bg-blue-50');
 
-            // Dispatch custom event to parent
             this.container.dispatchEvent(new CustomEvent('assetSelected', {
                 detail: { assetId: node.id },
                 bubbles: true
@@ -106,7 +206,9 @@ class AssetTree {
         // Render children recursively
         if (hasChildren) {
             const childUl = document.createElement('ul');
-            childUl.className = 'children-container hidden ml-[5px] border-l border-slate-200 space-y-1 relative'; // default to collapsed
+            // When searching, expand all. Otherwise default collapsed except level 0.
+            const shouldExpand = this.searchTerm || level === 0;
+            childUl.className = `children-container ${shouldExpand ? '' : 'hidden'} ml-[5px] border-l border-slate-200 space-y-1 relative`;
 
             node.children.forEach(child => {
                 childUl.appendChild(this.createNodeElement(child, level + 1));
@@ -114,16 +216,31 @@ class AssetTree {
 
             li.appendChild(childUl);
 
-            // Expand first level by default
-            if (level === 0) {
-                childUl.classList.remove('hidden');
-                if (toggleSpan.querySelector('svg')) {
-                    toggleSpan.querySelector('svg').classList.remove('-rotate-90');
-                }
+            // Toggle chevron direction
+            if (shouldExpand && toggleSpan.querySelector('svg')) {
+                toggleSpan.querySelector('svg').classList.remove('-rotate-90');
             }
         }
 
         return li;
+    }
+
+    /**
+     * Highlight matching substring with a background mark.
+     */
+    _highlightMatch(text, term) {
+        const idx = text.toLowerCase().indexOf(term);
+        if (idx === -1) return this._escapeHtml(text);
+        const before = text.substring(0, idx);
+        const match = text.substring(idx, idx + term.length);
+        const after = text.substring(idx + term.length);
+        return `${this._escapeHtml(before)}<mark class="bg-amber-200/70 text-amber-900 rounded px-0.5">${this._escapeHtml(match)}</mark>${this._escapeHtml(after)}`;
+    }
+
+    _escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
     }
 
     getIconForType(type) {

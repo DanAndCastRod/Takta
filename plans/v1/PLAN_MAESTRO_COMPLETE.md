@@ -2,7 +2,7 @@
 
 > **Versión**: 4.0 (Armonización Global)
 > **Fecha**: 2026-02-25
-> **Estado**: Fase 1 ✅ — Fase 2 ✅ (MVP) — Fase 3 🔄 En progreso
+> **Estado**: Fase 1 ✅ — Fase 2 ✅ (MVP) — Fase 3 ✅ — Fase 4 pendiente
 
 Este documento es el **Índice Estratégico**. Para los detalles de ejecución sprint por sprint, consultar los planes de fase específicos vinculados abajo.
 
@@ -90,22 +90,22 @@ gantt
 ### [FASE 1: Fundamentos y Datos Maestros](FASE_1_FUNDAMENTOS.md) ✅
 > **Semana 1-2** — Completada 2026-02-23
 > Establecimiento del "Sistema Nervioso" del proyecto.
-- **Backend**: FastAPI + SQLModel + JWT Auth + RBAC. API CRUD `/assets` con jerarquía recursiva, breadcrumbs, ciclo-detection. **20 tests pasando.**
-- **Frontend**: Vite + Vanilla JS. Login, Navbar, Sidebar, AssetDetail, SPA Hash Router. **5 tests pasando.**
-- **Testing**: pytest (SQLite in-memory) + Vitest (jsdom). **25 tests totales.**
+- **Backend**: FastAPI + SQLModel + JWT Auth + RBAC. API CRUD `/assets` con jerarquía recursiva, breadcrumbs, ciclo-detection.
+- **Frontend**: Vite + Vanilla JS. Login, Navbar, Sidebar, AssetTree, AssetDetail, SPA Hash Router.
+- **Testing**: pytest (SQLite in-memory) + Vitest (jsdom).
 
 ### [FASE 2: Motor Documental](FASE_2_DOCUMENTAL.md) ✅
 > **Semana 3-4** — Completada 2026-02-24
 > Digitalización del "Know-How" (SOPs, LUPs).
-- **Backend**: Ingestión de 62 templates MD desde `ie_formats/`, CRUD documentos JSON, JOIN template↔document. **27 tests backend (acumulado).**
-- **Frontend**: Editor.js v2.30.8 + 8 plugins vía CDN. TemplateSelector (grid por categoría), EditorCanvas (guardar → API), Markdown→Bloques parser. **Build exitoso (15 módulos, 32.89 KB JS).**
+- **Backend**: Ingestión de 62 templates MD desde `ie_formats/`, CRUD documentos JSON, JOIN template↔document.
+- **Frontend**: Editor.js v2.30.8 + 8 plugins vía CDN. TemplateSelector (grid por categoría), EditorCanvas (guardar → API), Markdown→Bloques parser.
 
 ### [FASE 3: Motor de Ingeniería Avanzada](FASE_3_INGENIERIA.md) 🔄
 > **Semana 5-6** — Sprint 5 ✅ Completado 2026-02-25
 > Medición, Estandarización (Metodología Nievel), Capacidad y Modelado de Restricciones.
-- **Sprint 5 ✅**: CRUD Triada (Activo+Actividad+SKU), Catálogos Maestros, Frontend Ingeniería. **11 tests.**
-- **Sprint 5.5**: Motor de Capacidad + Staffing Calculator.
-- **Sprint 6**: Cronómetro Digital Preconfigurable + Muestreo.
+- **Sprint 5 ✅**: CRUD Triada (Activo+Actividad+SKU), Catálogos Maestros, Frontend Ingeniería.
+- **Sprint 5.5 ✅**: Motor de Capacidad + Staffing Calculator.
+- **Sprint 6 ✅**: Cronómetro Digital Preconfigurable (Nievel) + Captura de Tiempos.
 
 ### [FASE 4: Control de Piso y Captura Móvil](FASE_4_EJECUCION.md)
 > **Semana 7-8**
@@ -150,15 +150,15 @@ gantt
 
 | Capa | Herramienta | Nivel | Estado Actual |
 |------|-------------|-------|---------------|
-| **Backend API** | `pytest` + `httpx` | Unit + Integration | **38 tests ✅** |
+| **Backend API** | `pytest` + `httpx` | Unit + Integration | **47 tests ✅** |
 | **Frontend** | `Vitest` (`jsdom`) | Unit (services, utils) | **5 tests ✅** |
-| **Build** | `vite build` | Compilación producción | **15 módulos ✅** |
+| **Build** | `vite build` | Compilación producción | ✅ |
 | **E2E** | Browser subagent / Manual | Flujos críticos | Parcial |
 
 - **Infraestructura**: BD SQLite en memoria para tests (fixture `conftest.py`).
 - **CI**: Ejecutar `pytest` y `vitest run` en cada push.
 - **Tests mínimos por sprint**: Cada sprint debe entregar al menos 3 tests de API.
-- **Cobertura actual**: 43 tests totales (38 backend + 5 frontend).
+- **Cobertura actual**: **52 tests totales** (47 backend + 5 frontend).
 
 ---
 

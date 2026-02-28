@@ -1,73 +1,140 @@
+"""
+Database configuration for Takta.
+
+Controls which database engine to use via the DB_MODE environment variable:
+  - "sqlite" (default) — local SQLite file, zero config, instant startup
+  - "mssql"            — SQL Server for staging/production
+
+Configuration is read from .env at project root.
+Legacy FORCE_SQLITE=True is still honored for backwards compatibility.
+"""
+
 from sqlmodel import SQLModel, create_engine, Session
+from sqlalchemy import text
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# ── Logging ──
 logger = logging.getLogger(__name__)
 
-load_dotenv()
+# ── Load .env from project root ──
+# Walk up from this file (backend/app/db.py) → backend/app → backend → project_root
+_project_root = Path(__file__).resolve().parent.parent.parent
+_env_file = _project_root / ".env"
+if _env_file.exists():
+    load_dotenv(_env_file, override=False)  # don't override already-set env vars
+else:
+    load_dotenv()  # fallback: search cwd
 
-# --- Configuration ---
-# SQL Server Config
-SERVER = os.getenv("SERVER", "10.252.0.144")
-DATABASE = os.getenv("DB_NAME", "Takta")
-USERNAME = os.getenv("USER", "proceso_opav")
-PASSWORD = os.getenv("PASSWORD", "Opav2022.")
 
-# URL for SQL Server
-# Note: Using 'trustServerCertificate=yes' might be needed for some MSSQL setups, but handled by pymssql
-MSSQL_URL = f"mssql+pymssql://{USERNAME}:{PASSWORD}@{SERVER}/{DATABASE}"
+# ── Resolve DB_MODE ──
+def _resolve_db_mode() -> str:
+    """
+    Determine which database to use. Priority:
+      1. DB_MODE env var (explicit)
+      2. FORCE_SQLITE=True (legacy, maps to 'sqlite')
+      3. Default: 'sqlite'
+    """
+    explicit_mode = os.getenv("DB_MODE")
+    if explicit_mode:
+        return explicit_mode.strip().lower()
 
-# URL for SQLite Fallback (local file)
-SQLITE_URL = "sqlite:///./takta.db"
+    # Legacy: FORCE_SQLITE
+    if os.getenv("FORCE_SQLITE", "False").lower() == "true":
+        return "sqlite"
 
-# Force mode
-FORCE_SQLITE = os.getenv("FORCE_SQLITE", "False").lower() == "true"
+    # Default
+    return "sqlite"
 
-engine = None
+
+DB_MODE = _resolve_db_mode()
+
+# ── Connection Parameters ──
+# SQL Server (only used when DB_MODE == 'mssql')
+MSSQL_SERVER = os.getenv("MSSQL_SERVER", os.getenv("SERVER", "10.252.0.144"))
+MSSQL_DATABASE = os.getenv("MSSQL_DATABASE", os.getenv("DB_NAME", "Takta"))
+MSSQL_USER = os.getenv("MSSQL_USER", os.getenv("USER", "proceso_opav"))
+MSSQL_PASSWORD = os.getenv("MSSQL_PASSWORD", os.getenv("PASSWORD", "Opav2022."))
+MSSQL_URL = f"mssql+pymssql://{MSSQL_USER}:{MSSQL_PASSWORD}@{MSSQL_SERVER}/{MSSQL_DATABASE}"
+
+# SQLite
+SQLITE_PATH = os.getenv("SQLITE_PATH", str(_project_root / "takta.db"))
+SQLITE_URL = f"sqlite:///{SQLITE_PATH}"
+
+
+# ── Engine Singleton ──
+_engine = None
+
 
 def get_engine():
-    global engine
-    if engine:
-        return engine
+    """
+    Create or return the database engine singleton.
 
-    if FORCE_SQLITE:
-        logger.warning("⚠️ FORCE_SQLITE is True. Using SQLite database.")
-        engine = create_engine(SQLITE_URL, connect_args={"check_same_thread": False})
-        return engine
+    - "sqlite": instant, no network dependency
+    - "mssql":  connect to SQL Server; if connection fails, fall back to SQLite
+    """
+    global _engine
+    if _engine is not None:
+        return _engine
 
+    if DB_MODE == "mssql":
+        _engine = _create_mssql_engine()
+    else:
+        logger.info(f"[DB] Using SQLite: {SQLITE_PATH}")
+        _engine = create_engine(
+            SQLITE_URL,
+            connect_args={"check_same_thread": False},
+        )
+
+    return _engine
+
+
+def _create_mssql_engine():
+    """Attempt SQL Server connection with SQLite fallback."""
     try:
-        # Attempt minimal connection test
-        logger.info(f"🔌 Attempting to connect to SQL Server at {SERVER}...")
-        # Create a temporary engine for testing without 'echo' to avoid noise
-        test_engine = create_engine(MSSQL_URL)
-        with test_engine.connect() as conn:
-            pass
-        logger.info("✅ Connected to SQL Server successfully.")
-        
-        # If successful, create variable engine
-        engine = create_engine(MSSQL_URL, echo=True)
+        logger.info(f"[DB] Connecting to SQL Server: {MSSQL_SERVER}/{MSSQL_DATABASE}...")
+        engine = create_engine(MSSQL_URL, echo=False, pool_pre_ping=True)
+        # Validate the connection actually works
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        logger.info("[DB] SQL Server connected successfully.")
         return engine
-        
     except Exception as e:
-        logger.error(f"❌ Failed to connect to SQL Server: {e}")
-        logger.warning("⚠️ Falling back to local SQLite database: takta.db")
-        # Fallback
-        engine = create_engine(SQLITE_URL, connect_args={"check_same_thread": False})
-        return engine
+        logger.error(f"[DB] SQL Server connection failed: {e}")
+        logger.warning(f"[DB] Falling back to SQLite: {SQLITE_PATH}")
+        return create_engine(
+            SQLITE_URL,
+            connect_args={"check_same_thread": False},
+        )
 
-# Initialize engine logic
-engine = get_engine()
+
+def reset_engine():
+    """Reset the engine singleton. Used by tests to inject a test engine."""
+    global _engine
+    _engine = None
+
+
+def set_engine(engine):
+    """Override the engine singleton. Used by tests."""
+    global _engine
+    _engine = engine
+
 
 def init_db():
+    """Create all SQLModel tables if they don't exist."""
+    engine = get_engine()
     try:
         SQLModel.metadata.create_all(engine)
-        logger.info("✅ Database initialized (tables created).")
+        logger.info("[DB] Tables created/verified.")
     except Exception as e:
-        logger.error(f"❌ Error creating tables: {e}")
+        logger.error(f"[DB] Error creating tables: {e}")
+        raise
+
 
 def get_session():
+    """FastAPI dependency: yields a database session per request."""
+    engine = get_engine()
     with Session(engine) as session:
         yield session

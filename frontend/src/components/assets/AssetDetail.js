@@ -17,7 +17,10 @@ class AssetDetail {
             ]);
 
             this.asset = assetData;
-            this.breadcrumbs = breadcrumbsData;
+            // /context returns {breadcrumbs: [...], depth, ...} — extract the array
+            this.breadcrumbs = Array.isArray(breadcrumbsData)
+                ? breadcrumbsData
+                : (breadcrumbsData.breadcrumbs || []);
 
             this.render();
         } catch (error) {

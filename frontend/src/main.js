@@ -12,6 +12,7 @@ import DocumentEditorPage from './pages/DocumentEditorPage.js';
 import EngineeringPage from './pages/EngineeringPage.js';
 import TimingPage from './pages/TimingPage.js';
 import CapacityPage from './pages/CapacityPage.js';
+import AssetsPage from './pages/AssetsPage.js';
 
 class App {
   constructor() {
@@ -85,10 +86,7 @@ class App {
                     <h1 class="text-2xl font-bold text-slate-900">Dashboard</h1>
                     <p class="text-slate-600 mt-2">Bienvenido, ${this.user.username}. Sistema OAC-SEO activado.</p>
                 </div>`,
-        '/assets': () => `<div class="p-6">
-                    <h1 class="text-2xl font-bold text-slate-900">Módulo de Activos</h1>
-                    <p class="text-slate-600 mt-2">Por implementar...</p>
-                </div>`,
+        '/assets': AssetsPage,
         '/engineering': EngineeringPage,
         '/timing': TimingPage,
         '/capacity': CapacityPage,
