@@ -41,7 +41,7 @@ class LayoutDetailResponse(LayoutResponse):
 
 # --- Endpoints ---
 
-@router.get("/", response_model=List[LayoutResponse])
+@router.get("", response_model=List[LayoutResponse])
 def get_layouts(session: Session = Depends(get_session)):
     """List all active layouts (lightweight)"""
     layouts = session.exec(select(PlantLayout).where(PlantLayout.is_active == True)).all()
@@ -55,7 +55,7 @@ def get_layout(layout_id: uuid.UUID, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail="Layout not found")
     return layout
 
-@router.post("/", response_model=LayoutResponse)
+@router.post("", response_model=LayoutResponse)
 def create_layout(layout_in: LayoutCreate, session: Session = Depends(get_session)):
     """Create a new layout"""
     layout = PlantLayout.from_orm(layout_in)
@@ -71,7 +71,7 @@ def update_layout(layout_id: uuid.UUID, layout_in: LayoutUpdate, session: Sessio
     if not layout:
         raise HTTPException(status_code=404, detail="Layout not found")
     
-    layout_data = layout_in.dict(exclude_unset=True)
+    layout_data = layout_in.model_dump(exclude_unset=True)
     for key, value in layout_data.items():
         setattr(layout, key, value)
     

@@ -1,0 +1,114 @@
+[
+  {
+    "domain": "plant",
+    "code": "PLANT_ZONE_RECT",
+    "name": "Zona de producción",
+    "version": "1.0.0",
+    "element_type": "rect",
+    "tags": ["plant", "zone", "production"],
+    "shape": {
+      "type": "rect",
+      "width": 140,
+      "height": 90,
+      "fill": "rgba(99, 102, 241, 0.35)",
+      "stroke": "#4338ca",
+      "strokeWidth": 2
+    },
+    "is_template": false,
+    "guide_markdown": "Usa este bloque para delimitar áreas de trabajo y asociarlas a un activo."
+  },
+  {
+    "domain": "plant",
+    "code": "PLANT_MACHINE_NODE",
+    "name": "Máquina / Estación",
+    "version": "1.0.0",
+    "element_type": "ellipse",
+    "tags": ["plant", "machine", "station"],
+    "shape": {
+      "type": "ellipse",
+      "rx": 48,
+      "ry": 48,
+      "fill": "rgba(14, 165, 233, 0.3)",
+      "stroke": "#0369a1",
+      "strokeWidth": 2
+    },
+    "is_template": false,
+    "guide_markdown": "Asocia `assetId` y `capacity` para habilitar análisis y simulación."
+  },
+  {
+    "domain": "process",
+    "code": "PROCESS_FLOW_ARROW",
+    "name": "Flujo de material",
+    "version": "1.0.0",
+    "element_type": "arrowLine",
+    "tags": ["process", "flow", "material"],
+    "shape": {
+      "type": "line",
+      "x1": 0,
+      "y1": 0,
+      "x2": 180,
+      "y2": 0,
+      "stroke": "#8b5cf6",
+      "strokeWidth": 3
+    },
+    "is_template": false,
+    "guide_markdown": "Conecta estaciones de proceso y define `flowData.capacity`."
+  },
+  {
+    "domain": "vsm",
+    "code": "VSM_BASIC_TEMPLATE",
+    "name": "Plantilla VSM básica",
+    "version": "1.0.0",
+    "element_type": "template",
+    "tags": ["vsm", "template", "lean"],
+    "shape": {
+      "template_key": "vsm-basic",
+      "nodes": [
+        {"id": "supplier", "label": "Proveedor", "type": "source"},
+        {"id": "process_1", "label": "Proceso 1", "type": "process"},
+        {"id": "inventory_1", "label": "Inventario", "type": "inventory"},
+        {"id": "process_2", "label": "Proceso 2", "type": "process"},
+        {"id": "customer", "label": "Cliente", "type": "sink"}
+      ]
+    },
+    "is_template": true,
+    "guide_markdown": "Base para mapear flujo de valor material e información en comités de mejora."
+  },
+  {
+    "domain": "vector",
+    "code": "VECTOR_INFO_TAG",
+    "name": "Etiqueta informativa",
+    "version": "1.0.0",
+    "element_type": "textbox",
+    "tags": ["vector", "annotation", "text"],
+    "shape": {
+      "type": "textbox",
+      "text": "Nuevo nodo",
+      "fontSize": 16,
+      "fontFamily": "Arial",
+      "fill": "#0f172a",
+      "backgroundColor": "rgba(255,255,255,0.85)",
+      "padding": 8
+    },
+    "is_template": false,
+    "guide_markdown": "Úsalo para etiquetas operativas, límites y notas de ingeniería."
+  },
+  {
+    "domain": "plant",
+    "code": "INDUSTRY_FOOD_LINE_TEMPLATE",
+    "name": "Plantilla línea alimentos",
+    "version": "1.0.0",
+    "element_type": "template",
+    "tags": ["template", "food", "line", "industry"],
+    "shape": {
+      "template_key": "food-line",
+      "zones": [
+        {"name": "Recepción", "capacity": 120},
+        {"name": "Preparación", "capacity": 100},
+        {"name": "Empaque", "capacity": 95}
+      ]
+    },
+    "is_template": true,
+    "guide_markdown": "Plantilla inicial para industrias de alimentos con flujo lineal."
+  }
+]

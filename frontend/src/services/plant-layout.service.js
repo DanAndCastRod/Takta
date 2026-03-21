@@ -1,81 +1,61 @@
-
-const API_BASE = '/api';
+﻿import ApiClient from './api.client.js';
 
 class PlantLayoutService {
+    async getLayouts(params = {}) {
+        const query = new URLSearchParams();
 
-    // --- Layouts ---
-
-    async getLayouts() {
-        try {
-            const response = await fetch(`${API_BASE}/plant-layouts/`);
-            if (!response.ok) throw new Error('Failed to fetch layouts');
-            return await response.json();
-        } catch (error) {
-            console.error('[PlantLayoutService] Error fetching layouts:', error);
-            throw error;
+        if (typeof params === 'string') {
+            const normalized = params.trim().replace(/^\?/, '');
+            if (normalized) {
+                normalized.split('&').forEach((pair) => {
+                    const [rawKey, rawValue = ''] = pair.split('=');
+                    if (!rawKey) return;
+                    query.set(decodeURIComponent(rawKey), decodeURIComponent(rawValue));
+                });
+            }
+        } else if (params && typeof params === 'object') {
+            Object.entries(params).forEach(([key, value]) => {
+                if (value === undefined || value === null || value === '') return;
+                query.set(key, String(value));
+            });
         }
+
+        const suffix = query.toString();
+        return ApiClient.get(`/plant-layouts${suffix ? `?${suffix}` : ''}`);
     }
 
     async getLayout(id) {
-        try {
-            const response = await fetch(`${API_BASE}/plant-layouts/${id}`);
-            if (!response.ok) throw new Error('Failed to fetch layout');
-            return await response.json();
-        } catch (error) {
-            console.error('[PlantLayoutService] Error fetching layout details:', error);
-            throw error;
-        }
+        return ApiClient.get(`/plant-layouts/${id}`);
     }
 
     async saveLayout(data) {
-        try {
-            const isUpdate = !!data.id;
-            const url = isUpdate ? `${API_BASE}/plant-layouts/${data.id}` : `${API_BASE}/plant-layouts/`;
-            const method = isUpdate ? 'PUT' : 'POST';
+        const isUpdate = Boolean(data.id);
+        const payload = {
+            name: data.name,
+            description: data.description ?? null,
+            json_content: data.json_content ?? data.json ?? '{}',
+            thumbnail_data: data.thumbnail_data ?? data.thumbnail ?? null,
+            plant_id: data.plant_id ?? data.asset_id ?? null,
+            is_active: data.is_active ?? true,
+        };
 
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            if (!response.ok) throw new Error('Failed to save layout');
-            return await response.json();
-        } catch (error) {
-            console.error('[PlantLayoutService] Error saving layout:', error);
-            throw error;
+        if (isUpdate) {
+            return ApiClient.put(`/plant-layouts/${data.id}`, payload);
         }
+        return ApiClient.post('/plant-layouts', payload);
+    }
+
+    // Backward-compatible alias used by PlantEditor internals
+    async savePlantLayout(data) {
+        return this.saveLayout(data);
     }
 
     async deleteLayout(id) {
-        try {
-            const response = await fetch(`${API_BASE}/plant-layouts/${id}`, {
-                method: 'DELETE'
-            });
-            if (!response.ok) throw new Error('Failed to delete layout');
-            return await response.json();
-        } catch (error) {
-            console.error('[PlantLayoutService] Error deleting layout:', error);
-            throw error;
-        }
+        return ApiClient.delete(`/plant-layouts/${id}`);
     }
 
-    // --- Assets (Machines) ---
-
-    async getAssetsList() {
-        try {
-            // Asumiendo que existe un endpoint que devuelve lista plana o arbol
-            // Si /assets devuelve paginado, aqui podriamos pedir ?limit=1000
-            const response = await fetch(`${API_BASE}/assets/?limit=1000`);
-            if (!response.ok) throw new Error('Failed to fetch assets');
-            return await response.json();
-        } catch (error) {
-            console.error('[PlantLayoutService] Error fetching assets:', error);
-            // Fallback empty list to not break UI
-            return [];
-        }
+    async getAssetsList(limit = 1000) {
+        return ApiClient.get(`/assets?limit=${limit}`);
     }
 }
 

@@ -1,8 +1,8 @@
 # Plan Maestro de Implementación — Takta
 
 > **Versión**: 4.0 (Armonización Global)
-> **Fecha**: 2026-02-25
-> **Estado**: Fase 1 ✅ — Fase 2 ✅ (MVP) — Fase 3 ✅ — Fase 4 pendiente
+> **Fecha**: 2026-03-03
+> **Estado**: Fase 1 ✅ — Fase 2 ✅ — Fase 3 ✅ — Fase 4 ✅ — Fase 5 ✅
 
 Este documento es el **Índice Estratégico**. Para los detalles de ejecución sprint por sprint, consultar los planes de fase específicos vinculados abajo.
 
@@ -63,18 +63,18 @@ gantt
     Sprint 3 - Backend Documental        :done, f2s3, after f1s2, 3d
     Sprint 4 - Frontend Editor.js        :done, f2s4, after f2s3, 2d
 
-    section Fase 3: Ingeniería
+    section Fase 3: Ingeniería ✅
     Sprint 5 - Gestión de Estándares     :done, f3s5, 2026-02-25, 5d
-    Sprint 5.5 - Capacidad y Staffing    :f3s55, after f3s5, 3d
-    Sprint 6 - Cronómetro + Muestreo    :f3s6, after f3s5, 5d
+    Sprint 5.5 - Capacidad y Staffing    :done, f3s55, after f3s5, 3d
+    Sprint 6 - Cronómetro + Muestreo    :done, f3s6, after f3s5, 5d
 
-    section Fase 4: Ejecución
-    Sprint 7 - Bitácora + Captura Móvil  :f4s7, after f3s6, 5d
-    Sprint 8 - Personal + Polivalencia   :f4s8, after f4s7, 5d
+    section Fase 4: Ejecución ✅
+    Sprint 7 - Bitácora + Captura Móvil  :done, f4s7, after f3s6, 5d
+    Sprint 8 - Personal + Polivalencia   :done, f4s8, after f4s7, 5d
 
-    section Fase 5: Excelencia
-    Sprint 9 - Auditorías 5S + Actions   :f5s9, after f4s8, 5d
-    Sprint 10 - Kanban + VSM             :f5s10, after f5s9, 5d
+    section Fase 5: Excelencia ✅
+    Sprint 9 - Auditorías 5S + Actions   :done, f5s9, after f4s8, 5d
+    Sprint 10 - Kanban + VSM             :done, f5s10, after f5s9, 5d
 
     section Transversal
     PlantaEditor (Fabric.js)             :pe, after f1s2, 20d
@@ -83,7 +83,7 @@ gantt
 > [!NOTE]
 > Sprint 5.5 (Capacidad) se ejecuta en paralelo con Sprint 6 (Cronometraje).
 > **PlantaEditor** es un módulo transversal que se construye incrementalmente a lo largo de las fases.
-> Duración total estimada: **~12 semanas** (MVP) o **~16 semanas** (Full).
+> Duración total estimada de implementación V1: **~12 semanas**.
 
 ---
 
@@ -100,24 +100,24 @@ gantt
 - **Backend**: Ingestión de 62 templates MD desde `ie_formats/`, CRUD documentos JSON, JOIN template↔document.
 - **Frontend**: Editor.js v2.30.8 + 8 plugins vía CDN. TemplateSelector (grid por categoría), EditorCanvas (guardar → API), Markdown→Bloques parser.
 
-### [FASE 3: Motor de Ingeniería Avanzada](FASE_3_INGENIERIA.md) 🔄
-> **Semana 5-6** — Sprint 5 ✅ Completado 2026-02-25
+### [FASE 3: Motor de Ingeniería Avanzada](FASE_3_INGENIERIA.md) ✅
+> **Semana 5-6** — Completada Full (auditada 2026-03-03)
 > Medición, Estandarización (Metodología Nievel), Capacidad y Modelado de Restricciones.
 - **Sprint 5 ✅**: CRUD Triada (Activo+Actividad+SKU), Catálogos Maestros, Frontend Ingeniería.
 - **Sprint 5.5 ✅**: Motor de Capacidad + Staffing Calculator.
-- **Sprint 6 ✅**: Cronómetro Digital Preconfigurable (Nievel) + Captura de Tiempos.
+- **Sprint 6 ✅**: Cronómetro Digital + Work Sampling + reportes y gestión de laps.
 
-### [FASE 4: Control de Piso y Captura Móvil](FASE_4_EJECUCION.md)
-> **Semana 7-8**
+### [FASE 4: Control de Piso y Captura Móvil](FASE_4_EJECUCION.md) ✅
+> **Semana 7-8** — Completada Full (auditada 2026-03-03)
 > "La Tablet del Analista" y Bitácora de Producción.
 - **Backend**: Modelos de Ejecución (`ProductionLog`, `DowntimeEvent`, `Operator`, `OperatorSkill`), API de Registros, Gestión de Personal.
-- **Frontend**: Interfaz Móvil (Touch-First), Captura de Paros, **Dictado por Voz (Voice-to-Text)**.
+- **Frontend**: Interfaz móvil touch-first, captura de paros/bitácora, contexto avanzado, voz normalizada y planificación de turnos.
 
-### [FASE 5: Excelencia Operacional](FASE_5_EXCELENCIA.md)
-> **Semana 9-10**
+### [FASE 5: Excelencia Operacional](FASE_5_EXCELENCIA.md) ✅
+> **Semana 9-10** — Completada Full (auditada 2026-03-03)
 > Herramientas de Mejora Continua y Calidad.
 - **Backend**: Action Tracker, Scoring de Auditorías, Calculadora Kanban.
-- **Frontend**: Canvas VSM interactivo, Gráficos Radar 5S, Tableros Kanban.
+- **Frontend**: Workflow de acciones, auditoría avanzada con checklist, Kanban y VSM persistente con análisis/exportación.
 
 ### [Módulo Transversal: PlantaEditor](PLANT_EDITOR.md)
 > **Desarrollo incremental** a lo largo de las fases.
@@ -150,15 +150,15 @@ gantt
 
 | Capa | Herramienta | Nivel | Estado Actual |
 |------|-------------|-------|---------------|
-| **Backend API** | `pytest` + `httpx` | Unit + Integration | **47 tests ✅** |
+| **Backend API** | `pytest` + `httpx` | Unit + Integration | **88 tests ✅** |
 | **Frontend** | `Vitest` (`jsdom`) | Unit (services, utils) | **5 tests ✅** |
 | **Build** | `vite build` | Compilación producción | ✅ |
 | **E2E** | Browser subagent / Manual | Flujos críticos | Parcial |
 
 - **Infraestructura**: BD SQLite en memoria para tests (fixture `conftest.py`).
-- **CI**: Ejecutar `pytest` y `vitest run` en cada push.
+- **CI**: Workflow GitHub Actions [`/.github/workflows/ci.yml`](../../.github/workflows/ci.yml) ejecuta `python -m pytest -q backend/tests`, `npm test` y `npm run build` en cada push/PR.
 - **Tests mínimos por sprint**: Cada sprint debe entregar al menos 3 tests de API.
-- **Cobertura actual**: **52 tests totales** (47 backend + 5 frontend).
+- **Cobertura actual**: **93 tests totales** (88 backend + 5 frontend).
 
 ---
 
@@ -168,15 +168,15 @@ gantt
 | Datos | Fuente | Script | Estado |
 |-------|--------|--------|--------|
 | Sedes y Plantas | Manual | `seed_capacity_data.py` | ✅ |
-| Catálogo de Actividades | Excel existente | Por crear | ⬜ |
-| Catálogo de Referencias (SKU) | **SIESA** via MCP | Endpoint `/api/engineering/sync-references` | ⬜ |
+| Catálogo de Actividades | Excel existente | Importación XLSX (`/api/engineering/xlsx/import?entity=activities`) | ✅ |
+| Catálogo de Referencias (SKU) | Integración/MCP o carga masiva | `/api/engineering/sync-references` + XLSX (`entity=references`) | ✅ |
 | Templates de Formatos | Carpeta `ie_formats/` | `POST /api/templates/ingest` | ✅ 62 templates |
 
 ### Migración de datos legacy
 - **No hay BD legacy** que migrar directamente.
-- Los datos de estándares de tiempo (actualmente en Excel) se cargarán via:
-  1. CSV import endpoint (MVP)
-  2. Interfaz manual de captura (MVP)
+- Los datos de estándares de tiempo se cargan por:
+  1. Importación XLSX (`/api/engineering/xlsx/import?entity=standards`)
+  2. Interfaz manual contextual (`#/engineering` y `#/assets`)
 
 ---
 

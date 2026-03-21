@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Interfaz Base para adaptadores de persistencia de PlantFloor
  * Strategy Pattern para soportar Multi-DB (MSSQL/Enterprise vs JSON/Files/Community)
  */
@@ -33,3 +33,4 @@ export class StorageAdapter {
         throw new Error('Method "list" must be implemented');
     }
 }
+

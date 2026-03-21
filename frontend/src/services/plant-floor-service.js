@@ -1,5 +1,5 @@
-import { MSSQLAdapter } from './persistence/MSSQLAdapter';
-import { JSONFileAdapter } from './persistence/JSONFileAdapter';
+﻿import { MSSQLAdapter } from './persistence/MSSQLAdapter.js';
+import { JSONFileAdapter } from './persistence/JSONFileAdapter.js';
 
 class PlantFloorService {
     constructor() {
@@ -18,7 +18,7 @@ class PlantFloorService {
 
         if (useEnterprise) {
             console.log('[PlantFloorService] Using Enterprise Persistence (MSSQL/DB)');
-            this.adapter = new MSSQLAdapter('/api/engineering/plants');
+            this.adapter = new MSSQLAdapter('/plant-layouts');
         } else {
             console.log('[PlantFloorService] Using Community Persistence (JSON/Local)');
             this.adapter = new JSONFileAdapter();
@@ -30,7 +30,6 @@ class PlantFloorService {
      * @param {Object} plantData 
      */
     async savePlant(plantData) {
-        if (!plantData.id) throw new Error('Plant ID is required for saving');
         return await this.adapter.save(plantData);
     }
 
@@ -51,3 +50,4 @@ class PlantFloorService {
 }
 
 export const plantService = new PlantFloorService();
+

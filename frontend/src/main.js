@@ -6,13 +6,10 @@ import Router from './router.js';
 import Navbar from './components/layout/Navbar.js';
 import Sidebar from './components/layout/Sidebar.js';
 
-// Pages
-import LoginPage from './pages/Login.js';
-import DocumentEditorPage from './pages/DocumentEditorPage.js';
-import EngineeringPage from './pages/EngineeringPage.js';
-import TimingPage from './pages/TimingPage.js';
-import CapacityPage from './pages/CapacityPage.js';
-import AssetsPage from './pages/AssetsPage.js';
+import { initModuleContextSync } from './services/module-context.service.js';
+import { installGlobalUiFeedback } from './services/ui-feedback.service.js';
+import offlineSyncService from './services/offline-sync.service.js';
+import { bootstrapTenantRuntime } from './services/tenant-ui.service.js';
 
 class App {
   constructor() {
@@ -25,6 +22,8 @@ class App {
     window.addEventListener('auth:logout', () => this.handleLogout());
     window.addEventListener('auth:unauthorized', () => this.handleLogout());
     window.addEventListener('auth:login_success', () => this.init());
+    initModuleContextSync();
+    offlineSyncService.init();
 
     this.init();
   }
@@ -34,6 +33,7 @@ class App {
     const token = localStorage.getItem('takta_token');
 
     if (!token) {
+      await bootstrapTenantRuntime(null);
       // Not authenticated, render only navbar without user
       this.navbar.render(null);
       this.sidebar.render(null);
@@ -45,25 +45,33 @@ class App {
     try {
       const userData = await ApiClient.get('/auth/me');
       this.user = userData;
+      await bootstrapTenantRuntime(this.user);
 
       // Render authenticated shell
       this.navbar.render(this.user);
       this.sidebar.render(this.user);
       this.sidebar.updateActiveLink(); // Force active link state
+      this.warmupAuthenticatedChunks();
       this.initRouter(true);
 
     } catch (error) {
       console.error('Failed to validate session', error);
-      this.handleLogout(false); // remove token without infinite loops
+      localStorage.removeItem('takta_token');
+      this.handleLogout(false);
+      if (window.location.hash !== '#/login') {
+        window.location.hash = '#/login';
+      }
     }
   }
 
   handleLogout(redirect = true) {
     this.user = null;
+    void bootstrapTenantRuntime(null);
     this.navbar.render(null);
     this.sidebar.render(null);
+    this.initRouter(false);
     if (redirect) {
-      window.location.hash = '/login';
+      window.location.hash = '#/login';
     }
   }
 
@@ -73,27 +81,37 @@ class App {
 
     if (!isAuthenticated) {
       routes = {
-        '/login': LoginPage,
+        '/': async () => (await import('./pages/LandingPage.js')).default({ mode: 'landing', user: null }),
+        '/landing': async () => (await import('./pages/LandingPage.js')).default({ mode: 'landing', user: null }),
+        '/docs': async () => (await import('./pages/LandingPage.js')).default({ mode: 'docs', user: null }),
+        '/login': async () => (await import('./pages/Login.js')).default(),
         '*': () => {
-          // Redirect everything else to login if not authenticated
-          window.location.hash = '/login';
+          // Redirect unknown routes to landing when not authenticated.
+          window.location.hash = '#/landing';
           return '';
         }
       };
     } else {
       routes = {
-        '/': () => `<div class="p-6">
-                    <h1 class="text-2xl font-bold text-slate-900">Dashboard</h1>
-                    <p class="text-slate-600 mt-2">Bienvenido, ${this.user.username}. Sistema OAC-SEO activado.</p>
-                </div>`,
-        '/assets': AssetsPage,
-        '/engineering': EngineeringPage,
-        '/timing': TimingPage,
-        '/capacity': CapacityPage,
-        '/editor': DocumentEditorPage,
+        '/': async () => (await import('./pages/DashboardPage.js')).default(this.user),
+        '/landing': async () => (await import('./pages/LandingPage.js')).default({ mode: 'landing', user: this.user }),
+        '/docs': async () => (await import('./pages/LandingPage.js')).default({ mode: 'docs', user: this.user }),
+        '/assets': async () => (await import('./pages/AssetsPage.js')).default(),
+        '/engineering': async () => (await import('./pages/EngineeringPage.js')).default(),
+        '/timing': async () => (await import('./pages/TimingPage.js')).default(),
+        '/capacity': async () => (await import('./pages/CapacityPage.js')).default(),
+        '/execution': async () => (await import('./pages/ExecutionPage.js')).default(),
+        '/mobile': async () => (await import('./pages/ExecutionPage.js')).default(),
+        '/excellence': async () => (await import('./pages/ExcellencePage.js')).default(),
+        '/editor': async () => (await import('./pages/DocumentEditorPage.js')).default(),
+        '/documents': async () => (await import('./pages/DocumentsPage.js')).default(),
+        '/meetings': async () => (await import('./pages/MeetingsPage.js')).default(),
+        '/weight-sampling': async () => (await import('./pages/WeightSamplingPage.js')).default(),
+        '/plant-editor': async () => (await import('./pages/PlantEditorPage.js')).default(),
+        '/settings': async () => (await import('./pages/SettingsPage.js')).default(),
         '/login': () => {
           // Already logged in, redirect to home
-          window.location.hash = '/';
+          window.location.hash = '#/';
           return '';
         },
         '*': () => `<div class="p-8 text-center text-slate-500">404 - Not Found</div>`
@@ -110,9 +128,72 @@ class App {
       this.router.start();
     }
   }
+
+  warmupAuthenticatedChunks() {
+    // Preload frequent routes after login to reduce first navigation latency.
+    void import('./pages/AssetsPage.js');
+    void import('./pages/ExecutionPage.js');
+    void import('./pages/ExcellencePage.js');
+    void import('./pages/SettingsPage.js');
+    void import('./pages/LandingPage.js');
+  }
+}
+
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+
+  let shouldReload = false;
+  const notifyUpdateAvailable = () => {
+    window.dispatchEvent(new CustomEvent('pwa:update-available'));
+  };
+
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js');
+
+      if (registration.waiting) {
+        notifyUpdateAvailable();
+      }
+
+      registration.addEventListener('updatefound', () => {
+        const worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+            notifyUpdateAvailable();
+          }
+        });
+      });
+
+      window.setInterval(() => {
+        registration.update().catch(() => {});
+      }, 30 * 60 * 1000);
+    } catch (error) {
+      console.warn('Service worker registration failed:', error);
+    }
+  });
+
+  window.addEventListener('pwa:apply-update', async () => {
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration?.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+    } catch (error) {
+      console.warn('Unable to apply SW update:', error);
+    }
+  });
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (shouldReload) return;
+    shouldReload = true;
+    window.location.reload();
+  });
 }
 
 // Bootstrap application when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+  installGlobalUiFeedback();
   window.app = new App();
+  registerServiceWorker();
 });

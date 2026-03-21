@@ -1,0 +1,7 @@
+tunnel: takta-urit-api
+credentials-file: C:\ProgramData\cloudflared\<TUNNEL-UUID>.json
+
+ingress:
+  - hostname: api.takta.urit.services
+    service: http://localhost:8105
+  - service: http_status:404

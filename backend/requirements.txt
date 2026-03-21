@@ -3,8 +3,10 @@ uvicorn
 sqlmodel
 pymssql
 python-dotenv
+openpyxl
 python-jose[cryptography]
 passlib[bcrypt]
 httpx<0.28
 pytest
 python-multipart
+a2wsgi

@@ -1,4 +1,5 @@
 import pytest
+from sqlmodel import select
 from backend.app.models import FormatTemplate
 
 def test_ingest_templates_unauthorized(client):
@@ -15,7 +16,7 @@ def test_ingest_templates(client, auth_headers, session):
     assert data["errors"] == []
     
     # Verify they were inserted
-    templates_in_db = session.query(FormatTemplate).all()
+    templates_in_db = session.exec(select(FormatTemplate)).all()
     assert len(templates_in_db) == data["created"]
 
 def test_get_templates(client, auth_headers):
@@ -23,7 +24,7 @@ def test_get_templates(client, auth_headers):
     client.post("/api/templates/ingest", headers=auth_headers)
     
     # Get templates
-    response = client.get("/api/templates/")
+    response = client.get("/api/templates/", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
     

@@ -1,0 +1,427 @@
+                                                                                Código: —
+
+                                                            ACTA                Versión: —
+
+                                                                                Página: 1
+
+
+
+Fecha               3 de marzo de 2026                               Acta No:                —
+
+
+
+
+Título de la
+                Arranque Semanal — Ingeniería de Procesos
+reunión
+
+Hora de
+                7:30 a.m.
+inicio
+
+Hora de
+                9:00 a.m.
+finalización
+
+Lugar           Reunión virtual (Microsoft Teams)
+
+                Socialización de KPIs 2026 del área de Ingeniería de Procesos, definición de
+Objetivo
+                objetivos estratégicos y lineamientos para el año.
+
+                Diego Corrales Blanco (Jefe), Yenny Alexa Rodríguez Otalora (Analista), Nicolás
+                Alejandro Flórez Silva (Analista), Juan David Rodríguez Prieto (Analista), Daniel
+                Esteban Flórez Patiño (Auxiliar), Víctor Manuel Fernández Gómez (Analista),
+Asistentes
+                Juan Camilo Torres Robledo (Analista), María Camila Muñoz Cano (Analista),
+                Jhoan Sebastián Picón Torres (Analista), José Julián Aguirre Ramírez (Auxiliar),
+                Carlos Martinez (Practicante).
+
+Invitados       —
+
+Ausentes        —
+
+
+                                       ORDEN DEL DÍA
+
+
+  1. Objetivos y KPIs de Diego Corrales 2026 — Presentación de los objetivos del jefe del área
+     y su impacto en el equipo.
+ 2. Mejoras con Impacto Medible (OPAV) — Meta de $800M en ahorros/recuperaciones
+    anuales; roles y alcance.
+ 3. Transición de Mejoramiento Continuo — Cambio de responsabilidad al equipo de Paula;
+    proceso de transición en marzo.
+ 4. Rediseño del Proceso de Presupuesto 2026-2027 — Diagnóstico y mejora del proceso de
+    presupuesto con el equipo de oferta y demanda.
+ 5. Modelo de Métodos y Tiempos — Diseño e implementación de medición de capacidades y
+    recursos en piso (Top 100 referencias).
+ 6. Estandarización de Procesos Críticos — Matriz de priorización, documentación y backup
+    de configuraciones de máquinas.
+ 7. Seguridad y Autocuidado — Récord cero accidentes, cultura del cuidado, directrices de
+    SST.
+ 8. KPIs Individuales y Formación — Estructura de KPIs por integrante, plan de formación con
+    80 horas y proyecto aplicado.
+ 9. Varios — Licencia AutoCAD, informe de análisis de novedades, asignación de María Camila
+    al proceso de congelado.
+
+
+
+
+                                         DESARROLLO
+
+
+1 · Objetivos y KPIs de Diego Corrales 2026
+
+
+Contexto general
+
+    Diego Corrales presentó sus 5 objetivos estratégicos para 2026 con el fin de que el equipo
+    conozca el norte del área.
+    Los KPIs están alineados con las directrices de Daniel Borrero y la gerencia.
+    El tema de mejoramiento continuo (5S, grupos de mejoramiento) pasa a ser
+    responsabilidad del equipo de Paula (con Daniela, Ana y Juliana). El equipo de Ingeniería de
+    Procesos se enfoca en lo operativo y de estandarización.
+
+Distribución de objetivos
+
+        Objetivo                Peso                        Descripción
+
+                                       Soportar implementación de mejoras en plantas (OPAV).
+ 1. Mejoras con impacto
+                                10%    Meta: $800M/año en ahorros. $100M por analista, $50M
+ medible
+                                       por auxiliar.
+                                     Diagnóstico y mejora del proceso de presupuesto con
+ 2. Rediseño
+                             20%     equipo de oferta y demanda. Bases de datos de materia
+ presupuesto 2026-2027
+                                     prima cárnica.
+
+                                     Modelo de medición de capacidades y consumo unitario
+                            Mayor
+ 3. Métodos y tiempos                real por referencia. Top 100 referencias (80% del
+                            peso
+                                     volumen).
+
+                                     Transformación digital del proceso de programación de
+ 4. Programación
+                              —      mascotas. Prototipo para agosto, modelo completo a fin
+ mascotas (BIOS Apps)
+                                     de año.
+
+                                     Cierre condiciones altas/críticas, planes de acción de AT,
+ 5. Seguridad (SST)          5%      cultura del cuidado, reducir 30% accidentes
+                                     incapacitantes.
+
+
+
+
+2 · Mejoras con Impacto Medible (OPAV)
+
+
+Alcance y metas
+
+    Meta anual del equipo: $800.000.000 COP en recuperaciones, ahorros o mejoras medibles.
+    $100M por analista y $50M por auxiliar como meta individual.
+    Se requiere lograr al menos el 95% de la meta.
+    Focos permitidos: seguridad, calidad, eficiencia y merma.
+
+Modelo de trabajo
+
+    "Soportar" implica trabajo en equipo: las mejoras pueden ser propias o de otras áreas (SST,
+    mantenimiento, mejora continua, calidad, I+D, ambiental, abastecimiento, planta).
+    Las mejoras deben ser cuantificables en pesos. Se proyectan a 12 meses sobre la
+    medición mensual.
+    No necesariamente se requieren 5 mejoras fijas; pueden ser más o menos, siempre que se
+    alcance la meta económica.
+
+
+
+3 · Transición de Mejoramiento Continuo
+
+
+Cambio de liderazgo
+    Todo el tema de 5S y grupos de mejoramiento pasa a ser responsabilidad del equipo de
+    mejora continua (liderado por Paula).
+    IP seguirá participando en las actividades a las que sea invitado, pero no liderará estos
+    procesos.
+
+Proceso de transición — Copacabana
+
+    En Copacabana se venían haciendo calificaciones mensuales, análisis y capacitaciones de
+    5S. Este proceso se debe transferir durante marzo.
+    A partir de abril, la potestad completa será del equipo de mejora continua.
+    Se debe entregar toda la información al equipo de Paula, que actualmente lidera el espacio
+    de formación semanal con el consultor Carlos.
+
+
+
+4 · Rediseño Presupuesto 2026-2027 y PPO
+
+
+Presupuesto 2026-2027
+
+    Diego trabaja con el equipo de demanda y oferta en rediseñar el proceso de presupuesto
+    PAP del año 2027.
+    Se está estructurando una base de datos de materia prima cárnica y simulaciones de
+    presupuesto.
+    Víctor y Sebastián Picón conocen parcialmente el avance.
+    Representa el 20% de los KPIs de Diego.
+
+Situación de PPO
+
+    María Camila reportó que PPO presenta limitaciones: la información no sale compensada y
+    requiere 30 min a 1 hora adicional de ajuste manual.
+    Se evalúa si PPO sigue siendo la herramienta adecuada o si se requiere un modelo de
+    programación alternativo (posiblemente Excel offline).
+    Se plantea la necesidad de un plan de contingencia offline ante posibles caídas de
+    sistemas (blackout digital).
+
+
+
+5 · Modelo de Métodos y Tiempos
+
+
+Objetivo
+    Diseñar e implementar un modelo de medición de capacidades y uso de recursos en
+    piso basado en actividades reales.
+    Determinar el consumo unitario real por referencia.
+
+Alcance
+
+    Foco en las primeras 100 referencias (equivalentes al 70–80% del volumen y facturación
+    por planta).
+    Medición de: rendimientos de carne, consumos de materias primas y tiempos
+    operativos.
+    Integración a los sistemas de planeación para evaluación de capacidades y programación
+    de piso.
+
+Optimización del portafolio
+
+    Es probable que durante 2026 se dé un proceso de depuración de portafolio.
+    Actualmente Pollo tiene ~450 referencias; muchas podrían retirarse por no generar utilidad o
+    por alta operatividad.
+    La información de capacidades alimentará la evaluación de qué referencias mantener.
+
+Participación del equipo
+
+    Víctor preguntó sobre la posibilidad de solicitar licencias de software libre para
+    transformación de datos. Diego confirmó que se puede plantear el proyecto y solicitar sin
+    restricción.
+
+
+
+6 · Estandarización de Procesos Críticos
+
+
+Estructura del proceso
+
+    Generar una matriz de caracterización de procesos por impacto en el negocio
+    (rentabilidad y costo).
+    Priorizar los procesos/máquinas y generar estandarización + documentación completa.
+    Incluir recetas, configuraciones y backup de programas de máquinas (ejemplo: evento en
+    Pereira donde se borraron programas de ICUT por bajón de energía; igual ocurrió con una
+    flowpack en Caldas).
+    Peso del indicador: 30% dentro del KPI total.
+
+Proceso documental — Nueva dinámica
+    Nicolás planteó que el proceso de revisión documental con Yenny puede ser lento por carga
+    de trabajo.
+    Yenny propuso un espacio dedicado para revisar y estandarizar los formatos documentales
+    del área.
+    Nuevo flujo: La documentación ya no pasa internamente por Yenny; se comparte
+    directamente con jefes de planta, directores y gestores de proceso para validación. Con
+    su aval, se formaliza en el sistema documental de calidad.
+    Los formatos base se mantienen, pero se pueden expandir según la necesidad de cada
+    proceso (ej: bloqueado y etiquetado, recomendaciones adicionales).
+    Diego se compromete a habilitar un espacio la próxima semana para revisar los formatos
+    actuales y acordar ajustes.
+
+Observación de Nicolás sobre formatos
+
+    Cada planta ha hecho modificaciones propias al formato base (roles y responsabilidades,
+    complementos, etc.).
+    Se necesita unificar criterios manteniendo la estructura base pero permitiendo expansión
+    documentada.
+
+
+
+7 · Seguridad y Autocuidado
+
+
+Récord del equipo
+
+    Cero accidentes incapacitantes en todo el equipo de Ingeniería de Procesos durante 2025
+    (Bucaramanga, Pereira, Copacabana, Caldas).
+    La meta es mantener cero accidentes durante 2026.
+
+Eventos recientes en planta
+
+    6 meses del fallecimiento de Santiago en Planta Caldas (recordatorio de la gravedad del
+    tema).
+    Incidente del fin de semana: rotura de un aspa de ventilador en el CEDI de Planta Caldas;
+    lesionó a personal de mantenimiento y tuvo potencial de romper tubería de amoniaco.
+    Corte con cuchillo de un compañero de valor agregado en Caldas, estaba en
+    desplazamiento.
+
+Directrices de autocuidado
+
+    Uso de celular: restringido mientras se camina o desplaza.
+    Escaleras: siempre usar pasamanos.
+    Manipulación de equipos: solo con capacitación previa; nunca meter la mano en elementos
+    en movimiento.
+    Elementos cortopunzantes: uso obligatorio de guantes anticorte; evaluar implementación
+    de fundas para cuchillos.
+    Cargas: máximo 25 kg hombres, 12.5 kg mujeres; siempre en pareja.
+    Si hay que parar la máquina, se para. La eficiencia operativa de las plantas ronda el 30%;
+    no tiene sentido arriesgar la vida por productividad.
+
+
+
+8 · KPIs Individuales y Formación
+
+
+Estructura de KPIs individuales
+
+    Los KPIs son iguales para todos los integrantes del equipo, con variaciones en foco de
+    estandarización y formación.
+    Componentes: formación (20%), mejoras enfocadas, estandarización de procesos críticos,
+    soporte a áreas, métodos y tiempos.
+    La carga de KPIs debe realizarse durante el día de hoy (3 de marzo).
+
+Plan de formación — Modelo de liderazgo
+
+    2 horas semanales sobre las 40 semanas restantes del año para formación.
+    Programa validado por el jefe y anclado al modelo de liderazgo definido.
+    Distribución del 20% de formación: 20% certificación de 80 horas, 20% socialización, 60%
+    implementación de proyecto aplicado.
+
+Focos de formación por integrante
+
+           Integrante                       Modelo de Liderazgo / Foco de Formación
+
+ Juan Camilo Torres Robledo        Estandarización y optimización de flujos
+
+ José Julián Aguirre Ramírez       Estandarización y optimización de flujos
+
+ Yenny Alexa Rodríguez Otalora     Modelo nacional de datos y automatización
+
+ Daniel Esteban Flórez Patiño      Modelo nacional de datos y automatización
+
+ Juan David Rodríguez Prieto       Modelo nacional de diseño
+ Víctor Manuel Fernández
+                                    Modelo nacional de costos
+ Gómez
+
+ Jhoan Sebastián Picón Torres       Modelo nacional de abastecimiento
+
+ Nicolás Alejandro Flórez Silva     Modelo nacional de diseño
+
+                                    Reabastecimiento de congelado (enlace con planeación
+ María Camila Muñoz Cano
+                                    logística)
+
+Caso especial — María Camila Muñoz Cano
+
+    Su proceso cambia: pasará a trabajar en el modelo de reabastecimiento de congelado
+    con el equipo de planeación logística (Andrés Cotes, Anderson, Brian, Sebastián).
+    Objetivo: asegurar y controlar la estabilización del proceso de abastecimiento de congelado y
+    nivel de servicio.
+    Inicio estimado: 16 de marzo.
+    Se mantendrán 2 semanas de trabajo en Caldas antes de la transición.
+
+
+
+9 · Varios
+
+
+Alertas de abastecimiento
+
+    Sebastián Picón apoya la reunión quincenal con el equipo de abastecimiento a nivel
+    nacional para monitorear compra de insumos e ingredientes.
+    Se está mapeando el consumo de materias primas en planta (base construida con Sebas
+    y Víctor) para generar alertas y detectar oportunidades de mejora.
+
+Licencia AutoCAD
+
+    José Julián solicitó evaluar una licencia compartida de AutoCAD para diseño y presentación
+    de mejoras.
+    La licencia no fue aprobada para IP por costos. Diego está gestionando el uso de una
+    licencia de mantenimiento o proyectos.
+
+Informe de análisis de novedades (Juan David)
+
+    Juan David presentó un informe de análisis semántico y sintáctico de los registros de
+    novedades del equipo (desde 2024), elaborado con la herramienta Antigravity.
+    Se analizó el campo "lo que se hizo" con 841 registros.
+    Tópicos líderes identificados: digitalización (166), valor agregado y SST (114), tiquetes y frío,
+    compensación variable, viserado SST y simulador, comités regionales, filete institucional,
+    abastecimiento y PPO, IQF empaque ULMA, estandarización capacidades y tiempos.
+
+Granjas
+
+    Yenny preguntó por la inclusión de granjas en los KPIs de este año.
+    No se incluye por ahora, para no forzar el alcance. Si se cierran los KPIs de estandarización
+    y métodos/tiempos, se abrirá la posibilidad de entrar a granjas con mejoras enfocadas hacia
+    cierre de año.
+
+Certificación de formación — Costos
+
+    Sebastián Picón preguntó si hay presupuesto para pagos de certificación en cursos de
+    formación.
+    No hay presupuesto directo, pero si se requiere, Diego puede gestionar la legalización del
+    gasto con Vanessa.
+
+
+
+
+                          FOCOS PRINCIPALES DE LA SEMANA
+
+
+
+#                                Foco                                          Responsable
+
+1   Cargar KPIs 2026 en el sistema durante el día de hoy               Todos
+
+    Transferir proceso de 5S y mejoramiento continuo al equipo         Yenny Alexa(Copacabana) /
+2
+    de Paula (inicio transición marzo)                                 Todos
+
+    Identificar mejoras con impacto medible en las plantas
+3                                                                      Todos
+    (seguridad, calidad, eficiencia, merma)
+
+    Iniciar identificación de procesos/máquinas críticas para
+4                                                                      Diego / Todos
+    matriz de priorización
+
+5   Mantener cultura cero accidentes — Reforzar autocuidado            Todos
+
+    Seleccionar programa de formación alineado al modelo de
+6                                                                      Cada integrante
+    liderazgo asignado
+                    COMPROMISOS PARA LA PRÓXIMA SEMANA
+
+
+ 1. Todos: completar la carga de KPIs 2026 en el sistema.
+ 2. Diego Corrales: habilitar espacio de revisión de formatos documentales con todo el equipo.
+ 3. Diego Corrales: gestionar licencia de AutoCAD con el equipo de mantenimiento/proyectos.
+ 4. Yenny Alexa (Copacabana): iniciar proceso de transición de 5S y mejoramiento continuo al
+    equipo de Paula.
+ 5. Todos: definir programa de formación según el modelo de liderazgo asignado y validarlo con
+    Diego.
+ 6. Todos: identificar al menos una mejora con impacto medible potencial en la planta asignada.
+ 7. Diego Corrales: construir la matriz de procesos/máquinas críticas para priorización (en
+    conjunto con plantas).
+ 8. María Camila: preparar transición al proceso de reabastecimiento de congelado (inicio 16 de
+    marzo).
+ 9. Diego Corrales: llevar propuesta de fundas para cuchillos a las plantas.
+
+
+
+
+                                   PRÓXIMA REUNIÓN
+
+
+Fecha: 17 de marzo de 2026
+

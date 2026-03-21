@@ -1,70 +1,68 @@
-import { StorageAdapter } from './StorageAdapter';
+import { StorageAdapter } from './StorageAdapter.js';
+import ApiClient from '../api.client.js';
 
 /**
- * Adaptador para persistencia en SQL Server (Enterprise Version / BIOS)
- * Guarda la estructura del canvas directamente en columna NVARCHAR(MAX)
+ * Adapter de persistencia Enterprise.
+ * Usa el backend unificado de layouts (`/api/plant-layouts`).
  */
 export class MSSQLAdapter extends StorageAdapter {
     constructor(apiUrl) {
         super();
-        this.apiUrl = apiUrl || '/api/engineering/plants'; // Endpoint base
+        this.apiUrl = apiUrl || '/plant-layouts';
+    }
+
+    toLayoutPayload(plantData) {
+        const jsonContent = plantData.json_content
+            ?? (typeof plantData.canvas_json === 'string'
+                ? plantData.canvas_json
+                : JSON.stringify(plantData.canvas_json ?? {}));
+
+        return {
+            name: plantData.name || 'Planta sin nombre',
+            description: plantData.description ?? null,
+            json_content: jsonContent,
+            thumbnail_data: plantData.thumbnail_data ?? null,
+            is_active: plantData.is_active ?? true,
+        };
+    }
+
+    toPlantData(layout) {
+        return {
+            id: layout.id,
+            name: layout.name,
+            description: layout.description ?? '',
+            json_content: layout.json_content,
+            canvas_json: layout.json_content ? JSON.parse(layout.json_content) : {},
+            thumbnail_data: layout.thumbnail_data ?? null,
+            updated_at: layout.updated_at,
+            created_at: layout.created_at,
+        };
     }
 
     async save(plantData) {
-        console.log('[MSSQLAdapter] Transactional save for:', plantData.name);
-        try {
-            // Estructura esperada por el backend Enterprise
-            const payload = {
-                id: plantData.id,
-                name: plantData.name,
-                asset_id: plantData.asset_id,
-                canvas_json: JSON.stringify(plantData.canvas_json), // Serializado para DB
-                storage_type: 'db_json',
-                layers_config: plantData.layers
-            };
-
-            const response = await fetch(`${this.apiUrl}/${plantData.id}`, {
-                method: 'PUT', // or POST for new
-                headers: {
-                    'Content-Type': 'application/json',
-                    // 'Authorization': 'Bearer ...' // Token handling here
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) throw new Error('Database save failed');
-            return await response.json();
-        } catch (error) {
-            console.error('[MSSQLAdapter] Error:', error);
-            throw error;
-        }
+        console.log('[MSSQLAdapter] Saving layout:', plantData.name);
+        const payload = this.toLayoutPayload(plantData);
+        const layout = plantData.id
+            ? await ApiClient.put(`${this.apiUrl}/${plantData.id}`, payload)
+            : await ApiClient.post(this.apiUrl, payload);
+        return this.toPlantData({ ...layout, json_content: payload.json_content });
     }
 
     async load(id) {
-        console.log('[MSSQLAdapter] Fetching from DB:', id);
-        try {
-            const response = await fetch(`${this.apiUrl}/${id}`);
-            if (!response.ok) throw new Error('Database load failed');
-
-            const rawRow = await response.json();
-
-            // Reconstruir objeto PlantFloor
-            return {
-                id: rawRow.id,
-                name: rawRow.name,
-                asset_id: rawRow.asset_id,
-                canvas_json: typeof rawRow.canvas_json === 'string' ? JSON.parse(rawRow.canvas_json) : rawRow.canvas_json,
-                layers: rawRow.layers_config || [],
-                updated_at: rawRow.updated_at
-            };
-        } catch (error) {
-            console.error('[MSSQLAdapter] Error:', error);
-            throw error;
-        }
+        console.log('[MSSQLAdapter] Fetching layout from DB:', id);
+        const layout = await ApiClient.get(`${this.apiUrl}/${id}`);
+        return this.toPlantData(layout);
     }
 
     async list() {
-        // Implementación real
-        return [];
+        const layouts = await ApiClient.get(this.apiUrl);
+        return layouts.map((layout) => ({
+            id: layout.id,
+            name: layout.name,
+            description: layout.description ?? '',
+            thumbnail_data: layout.thumbnail_data ?? null,
+            updated_at: layout.updated_at,
+            created_at: layout.created_at,
+        }));
     }
 }

@@ -1,8 +1,8 @@
 # Plant Floor Editor (PlantaEditor)
 
-> **Versión**: 1.0 Draft  
-> **Fecha**: 2026-02-04  
-> **Estado**: Especificación de Diseño
+> **Versión**: 1.1  
+> **Fecha**: 2026-03-05  
+> **Estado**: Implementación V1 cerrada (pendientes V2 identificados)
 
 ---
 
@@ -175,46 +175,52 @@ sequenceDiagram
 ## 📋 Fases de Implementación
 
 ### Fase 1: Core Canvas & Persistencia (Sprint 1)
-- [ ] Inicializar Fabric.js 6.x
-- [ ] **Implementar Strategy Pattern para persistencia**:
+- [x] Inicializar Fabric.js 6.x
+- [x] **Implementar Strategy Pattern para persistencia**:
     - `MSSQLAdapter`: Para GrupoBios (Directo en DB)
     - `JSONFileAdapter`: Para Community (Sistema de archivos/Blob)
-- [ ] CRUD básico de PlantFloor
+- [x] CRUD básico de PlantFloor
 
 ### Fase 2: Motor de Importación (Sprint 2)
-- [ ] Parser XML para leer `.drawio`
-- [ ] Extracción y optimización de imágenes Base64 embebidas
-- [ ] Conversión de coordenadas mxGraph -> Fabric.js
+- [x] Parser XML para leer `.drawio`
+- [x] Extracción y optimización de imágenes Base64 embebidas
+- [x] Conversión de coordenadas mxGraph -> Fabric.js
 
 ### Fase 3: Sistema de Capas y Herramientas (Sprint 2-3)
 - [x] LayerManager (UI y Lógica)
 - [x] Toolbar de herramientas vectoriales
-- [ ] Inspector de propiedades (`PropertiesPanel.js`)
-- [ ] **Capas Funcionales**:
+- [x] Inspector de propiedades (`PropertiesPanel.js`)
+- [x] **Capas Funcionales**:
     - `base`: Plano de fondo (locked, no editable)
     - `zones`: Áreas de zonificación (rectángulos/polígonos parametrizables)
     - `assets`: Máquinas/puestos de trabajo vinculados a IDs del sistema
     - `connections`: Flechas de flujo entre contenedores
-- [ ] **Objetos Parametrizables**: Metadata (layerId, assetId, zoneType) y edición.
+- [x] **Objetos Parametrizables**: Metadata (layerId, assetId, zoneType) y edición.
 - [x] **Arrows Dinámicos**: Conexiones que siguen a los objetos.
-- [ ] **Parámetros de Conexión**: Arrows con metadata (tipo de flujo, capacidad, etiqueta).
+- [x] **Parámetros de Conexión**: Arrows con metadata (capacidad implementada; tipo/etiqueta se extiende en V2).
 
 ### Fase 3.5: Usabilidad Avanzada (Sprint 3)
-- [ ] **Context Menu**: Menú click derecho (Delete, Send to Back/Front, Properties).
-- [ ] **Atajos de Teclado**: 
+- [x] **Context Menu**: Menú click derecho (Delete, Send to Back/Front, Properties).
+- [x] **Atajos de Teclado**: 
     - `Ctrl+C` / `Ctrl+V`: Copy/Paste
     - `Ctrl+Z` / `Ctrl+Y`: Undo/Redo
     - `Arrows`: Nudge objects
-    - `Delete`: Eliminar (Listo)
-- [ ] **Gestión de Archivos**:
+    - `Delete`: Eliminar
+- [x] **Gestión de Archivos**:
     - Guardar/Cargar JSON local.
     - Exportar como PNG/SVG.
     - Autosave local (localStorage).
 
 ### Fase 4: Integración de Datos Reales (Sprint 4)
-- [ ] Vinculación Shape <-> Asset ID
-- [ ] D3.js Heatmaps superpuestos sobre canvas
-- [ ] WebSocket listener para cambios de estado
+- [x] Vinculación Shape <-> Asset ID
+- [x] Heatmap operativo base (overlay por métricas en capa `heatmap`)
+- [x] D3.js Heatmaps superpuestos sobre canvas
+- [x] WebSocket listener para cambios de estado
+
+> [!NOTE]
+> Configuración realtime frontend:
+> - Variable opcional: `VITE_PLANT_WS_URL=ws://127.0.0.1:9003/api/plant-layouts/ws`
+> - Si no se define, el frontend usa ruta relativa `/api/plant-layouts/ws`.
 
 ---
 

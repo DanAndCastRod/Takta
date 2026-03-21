@@ -1,0 +1,92 @@
+name: Deploy Takta Public (URiT + EC&F)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - "example.workflow.EC&F.yml"
+
+env:
+  FRONTEND_DIR: frontend
+  FRONTEND_DIST: frontend/dist
+  BACKEND_DIR: backend
+  API_URL_PUBLIC: https://back.takta.ejecomercial.co/api
+
+jobs:
+  deploy-public:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend (Vite)
+        run: |
+          echo "VITE_API_URL=${API_URL_PUBLIC}" > ${FRONTEND_DIR}/.env.production
+          npm ci --prefix ${FRONTEND_DIR}
+          npm run build --prefix ${FRONTEND_DIR}
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ECF_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.ECF_SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy frontend to cPanel public_html
+        run: |
+          FRONTEND_REMOTE_PATH="${{ secrets.ECF_FRONTEND_PATH }}"
+          [ -z "$FRONTEND_REMOTE_PATH" ] && FRONTEND_REMOTE_PATH="~/public_html/takta.urit.services"
+          ssh "${{ secrets.ECF_SSH_USER }}@${{ secrets.ECF_SSH_HOST }}" "mkdir -p ${FRONTEND_REMOTE_PATH} && rm -rf ${FRONTEND_REMOTE_PATH}/*"
+          rsync -az --delete ${FRONTEND_DIST}/ "${{ secrets.ECF_SSH_USER }}@${{ secrets.ECF_SSH_HOST }}:${FRONTEND_REMOTE_PATH}/"
+          ssh "${{ secrets.ECF_SSH_USER }}@${{ secrets.ECF_SSH_HOST }}" "cat > ${FRONTEND_REMOTE_PATH}/.htaccess <<'HTACCESS'
+          Options -MultiViews
+          RewriteEngine On
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule ^ index.html [L]
+          HTACCESS"
+
+      - name: Deploy backend source to cPanel app
+        run: |
+          BACKEND_REMOTE_PATH="${{ secrets.ECF_BACKEND_PATH }}"
+          [ -z "$BACKEND_REMOTE_PATH" ] && BACKEND_REMOTE_PATH="~/public_html/back.takta.ejecomercial.co"
+          ssh "${{ secrets.ECF_SSH_USER }}@${{ secrets.ECF_SSH_HOST }}" "mkdir -p ${BACKEND_REMOTE_PATH}"
+          rsync -az --delete \
+            --exclude ".venv" \
+            --exclude "__pycache__" \
+            --exclude "*.pyc" \
+            --exclude "tests" \
+            ${BACKEND_DIR}/ "${{ secrets.ECF_SSH_USER }}@${{ secrets.ECF_SSH_HOST }}:${BACKEND_REMOTE_PATH}/"
+
+      - name: Write backend .env from secret (optional)
+        if: ${{ secrets.ECF_BACKEND_ENV_B64 != '' }}
+        run: |
+          BACKEND_REMOTE_PATH="${{ secrets.ECF_BACKEND_PATH }}"
+          [ -z "$BACKEND_REMOTE_PATH" ] && BACKEND_REMOTE_PATH="~/public_html/back.takta.ejecomercial.co"
+          ssh "${{ secrets.ECF_SSH_USER }}@${{ secrets.ECF_SSH_HOST }}" "echo '${{ secrets.ECF_BACKEND_ENV_B64 }}' | base64 -d > ${BACKEND_REMOTE_PATH}/.env"
+
+      - name: Install dependencies and restart Passenger
+        run: |
+          BACKEND_REMOTE_PATH="${{ secrets.ECF_BACKEND_PATH }}"
+          [ -z "$BACKEND_REMOTE_PATH" ] && BACKEND_REMOTE_PATH="~/public_html/back.takta.ejecomercial.co"
+          PYTHON_BIN="${{ secrets.ECF_PYTHON_BIN }}"
+          [ -z "$PYTHON_BIN" ] && PYTHON_BIN="python3"
+          ssh "${{ secrets.ECF_SSH_USER }}@${{ secrets.ECF_SSH_HOST }}" "
+            cd ${BACKEND_REMOTE_PATH} &&
+            ${PYTHON_BIN} -m pip install --upgrade pip &&
+            ${PYTHON_BIN} -m pip install -r requirements.txt &&
+            mkdir -p tmp &&
+            touch tmp/restart.txt
+          "

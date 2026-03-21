@@ -7,9 +7,15 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run --pool=forks --maxWorkers=1",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:real": "playwright test --config=playwright.real.config.js",
+    "test:e2e:real:headed": "playwright test --config=playwright.real.config.js --headed",
+    "test:e2e:install": "playwright install chromium"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.1.18",
     "autoprefixer": "^10.4.24",
     "jsdom": "^28.1.0",

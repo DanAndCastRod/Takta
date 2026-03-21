@@ -1,4 +1,4 @@
-import ApiClient from '../services/api.client.js';
+﻿import ApiClient from '../services/api.client.js';
 
 /**
  * Login Page
@@ -42,6 +42,10 @@ const LoginPage = async () => {
                 <p class="text-xs text-slate-400">
                     MVP Demo: Usa <code>admin</code> / <code>admin123</code> o <br><code>ingeniero</code> / <code>takta2026</code>
                 </p>
+                <div class="mt-4 flex items-center justify-center gap-2">
+                    <a href="#/landing" class="px-2.5 py-1.5 rounded-md border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">Conocer Takta</a>
+                    <a href="#/docs" class="px-2.5 py-1.5 rounded-md border border-brand-orange bg-brand-orange/10 text-xs font-semibold text-brand-orange hover:bg-cyan-100">Guia de usuario</a>
+                </div>
             </div>
         </div>
     `;
@@ -99,3 +103,4 @@ const LoginPage = async () => {
 };
 
 export default LoginPage;
+

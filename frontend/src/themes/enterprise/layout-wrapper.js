@@ -1,4 +1,4 @@
-export class LayoutWrapper {
+﻿export class LayoutWrapper {
     constructor() {
         this.appContainer = document.querySelector('#app');
     }
@@ -70,3 +70,4 @@ export class LayoutWrapper {
 }
 
 export const TaktaLayout = new LayoutWrapper();
+

@@ -1,19 +1,18 @@
-import os
-import pathlib
-import yaml
 from uuid import UUID
-from typing import List, Dict, Any
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from pydantic import BaseModel
 
 from ...db import get_session
 from ...models import FormatTemplate
-from ...core.auth import require_role
+from ...core.auth import get_current_user, require_role
+from ...services.template_ingest import ingest_templates_from_disk, get_templates_dir
 
 router = APIRouter(
     prefix="/api/templates",
-    tags=["templates"]
+    tags=["templates"],
+    dependencies=[Depends(get_current_user)],
 )
 
 # Schema for Output
@@ -36,60 +35,19 @@ def ingest_templates(session: Session = Depends(get_session), user=Depends(requi
     Scans the `templates/ie_formats` directory for Markdown files and upserts them
     into the FormatTemplate table based on their filename and folder.
     """
-    # Go 5 levels up: templates.py -> routers -> api -> app -> backend -> Takta (Project Root)
-    project_root = pathlib.Path(__file__).resolve().parent.parent.parent.parent.parent
-    formats_dir = project_root / "templates" / "ie_formats"
-    
+    formats_dir = get_templates_dir()
     if not formats_dir.exists() or not formats_dir.is_dir():
         raise HTTPException(status_code=404, detail=f"Templates directory not found at {formats_dir}")
 
-    created = 0
-    updated = 0
-    errors = []
-
-    for filepath in formats_dir.rglob("*.md"):
-        try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                content = f.read()
-
-            category = filepath.parent.name
-            code = filepath.stem # Using filename without extension as unique code
-            
-            # Extract name from the first h1 header, otherwise use the filename
-            name = code
-            lines = content.split('\n')
-            for line in lines:
-                if line.startswith("# "):
-                    name = line[2:].strip()
-                    break
-
-            # Check if template already exists
-            existing_template = session.exec(select(FormatTemplate).where(FormatTemplate.code == code)).first()
-
-            if existing_template:
-                existing_template.name = name
-                existing_template.category = category
-                existing_template.markdown_structure = content
-                session.add(existing_template)
-                updated += 1
-            else:
-                new_template = FormatTemplate(
-                    code=code,
-                    name=name,
-                    category=category,
-                    markdown_structure=content
-                )
-                session.add(new_template)
-                created += 1
-
-        except Exception as e:
-            errors.append(f"Error processing {filepath.name}: {str(e)}")
-
-    session.commit()
-    return IngestResponse(created=created, updated=updated, errors=errors)
+    result = ingest_templates_from_disk(session, only_if_empty=False)
+    return IngestResponse(
+        created=int(result["created"]),
+        updated=int(result["updated"]),
+        errors=list(result["errors"]),
+    )
 
 
-@router.get("/", response_model=List[TemplateResponse])
+@router.get("", response_model=List[TemplateResponse])
 def get_templates(session: Session = Depends(get_session)):
     """
     Retrieves all available format templates, typically to show in a UI selector.

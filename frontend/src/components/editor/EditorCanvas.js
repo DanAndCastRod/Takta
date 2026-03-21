@@ -20,14 +20,19 @@ class EditorCanvas {
      */
     constructor(container, options = {}) {
         this.container = container;
+        this.documentId = options.documentId || null;
         this.templateId = options.templateId;
         this.templateName = options.templateName || 'Documento';
         this.assetId = options.assetId || null;
         this.assetName = options.assetName || '';
+        this.sourceContext = options.sourceContext || null;
         this.initialBlocks = options.initialBlocks || [];
         this.onSaved = options.onSaved || null;
         this.editor = null;
         this.isSaving = false;
+        this.autosaveTimer = null;
+        this.autosaveDelayMs = 2000;
+        this.lastAutosaveAt = null;
     }
 
     render() {
@@ -52,7 +57,7 @@ class EditorCanvas {
 
                 <!-- Editor Container -->
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 min-h-[500px] p-6">
-                    <div id="editorjs"></div>
+                    <div id="editorjs-holder"></div>
                 </div>
 
                 <!-- Floating Save Button -->
@@ -67,24 +72,66 @@ class EditorCanvas {
             </div>
         `;
 
-        this._initEditor();
+        void this._initEditor();
         this._attachHandlers();
     }
 
-    _initEditor() {
+    async _waitForHolder(maxAttempts = 120) {
+        let attempts = 0;
+        return new Promise((resolve) => {
+            const tryResolve = () => {
+                attempts += 1;
+                const holder = this.container.querySelector('#editorjs-holder');
+                if (holder && this.container.isConnected) {
+                    resolve(holder);
+                    return;
+                }
+                if (attempts >= maxAttempts) {
+                    resolve(null);
+                    return;
+                }
+                requestAnimationFrame(tryResolve);
+            };
+            tryResolve();
+        });
+    }
+
+    async _initEditor() {
         const tools = getEditorTools();
+        const holder = await this._waitForHolder();
+        const status = this.container.querySelector('#editor-status');
+
+        if (!holder) {
+            if (status) {
+                status.textContent = 'No fue posible inicializar el editor (holder no disponible).';
+                status.classList.add('text-red-500');
+            }
+            return;
+        }
+
+        if (this.editor && typeof this.editor.destroy === 'function') {
+            this.editor.destroy();
+            this.editor = null;
+        }
 
         this.editor = new window.EditorJS({
-            holder: 'editorjs',
+            holder: holder,
             tools: tools,
             i18n: EDITOR_I18N_ES,
-            placeholder: 'Haz clic aquí para empezar a escribir tu documento...',
+            placeholder: 'Haz clic aqui para empezar a escribir tu documento...',
             data: {
                 blocks: this.initialBlocks
             },
             onReady: () => {
-                const status = this.container.querySelector('#editor-status');
                 if (status) status.textContent = 'Editor listo';
+            },
+            onChange: () => {
+                if (status && status.textContent === 'Editor listo') {
+                    status.textContent = 'Cambios sin guardar';
+                    status.classList.remove('text-red-500');
+                    status.classList.add('text-amber-600');
+                }
+                this._scheduleAutosave();
             }
         });
     }
@@ -100,11 +147,8 @@ class EditorCanvas {
         const backBtn = this.container.querySelector('#editor-back-btn');
         if (backBtn) {
             backBtn.addEventListener('click', () => {
-                if (this.assetId) {
-                    window.location.hash = `/assets/${this.assetId}`;
-                } else {
-                    window.history.back();
-                }
+                if (this.assetId) window.location.hash = '/assets';
+                else window.location.hash = '/editor';
             });
         }
     }
@@ -129,18 +173,25 @@ class EditorCanvas {
             // Extract Editor.js data
             const editorData = await this.editor.save();
 
-            // Build payload
-            const payload = {
-                template_id: this.templateId,
-                asset_id: this.assetId || null,
-                content_json: JSON.stringify(editorData)
-            };
-
-            const result = await ApiClient.post('/documents/', payload);
+            const contentJson = JSON.stringify(editorData);
+            let result = null;
+            if (this.documentId) {
+                result = await ApiClient.patch(`/documents/${this.documentId}`, {
+                    content_json: contentJson,
+                    source_context_json: this.sourceContext ? JSON.stringify(this.sourceContext) : null
+                });
+            } else {
+                result = await ApiClient.post('/documents/', {
+                    template_id: this.templateId,
+                    asset_id: this.assetId || null,
+                    content_json: contentJson
+                });
+                this.documentId = result?.id || this.documentId;
+            }
 
             // Success feedback
             if (status) {
-                status.textContent = '✅ Guardado exitosamente';
+                status.textContent = 'Guardado exitosamente';
                 status.classList.remove('text-slate-400');
                 status.classList.add('text-green-600');
             }
@@ -149,7 +200,7 @@ class EditorCanvas {
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
-                ¡Guardado!
+                Guardado
             `;
             saveBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
             saveBtn.classList.add('bg-green-600', 'hover:bg-green-700');
@@ -172,7 +223,7 @@ class EditorCanvas {
         } catch (error) {
             console.error('EditorCanvas: save failed', error);
             if (status) {
-                status.textContent = `❌ Error: ${error.message}`;
+                status.textContent = `Error: ${error.message}`;
                 status.classList.add('text-red-500');
             }
             saveBtn.innerHTML = `
@@ -187,10 +238,47 @@ class EditorCanvas {
         }
     }
 
+    _scheduleAutosave() {
+        if (this.isSaving || !this.editor) return;
+        if (this.autosaveTimer) {
+            clearTimeout(this.autosaveTimer);
+        }
+        this.autosaveTimer = setTimeout(() => {
+            this._autosave().catch((error) => {
+                console.warn('EditorCanvas autosave failed:', error);
+            });
+        }, this.autosaveDelayMs);
+    }
+
+    async _autosave() {
+        if (this.isSaving || !this.editor) return;
+        const status = this.container.querySelector('#editor-status');
+        const data = await this.editor.save();
+        const payload = {
+            document_id: this.documentId || null,
+            template_id: this.templateId,
+            asset_id: this.assetId || null,
+            content_json: JSON.stringify(data),
+            source_context_json: this.sourceContext ? JSON.stringify(this.sourceContext) : null
+        };
+        const result = await ApiClient.post('/documents/autosave', payload);
+        this.documentId = result?.id || this.documentId;
+        this.lastAutosaveAt = new Date();
+        if (status) {
+            status.textContent = `Autosave ${this.lastAutosaveAt.toLocaleTimeString('es-CO')}`;
+            status.classList.remove('text-red-500', 'text-amber-600');
+            status.classList.add('text-slate-500');
+        }
+    }
+
     /**
      * Destroy the editor instance (cleanup)
      */
     destroy() {
+        if (this.autosaveTimer) {
+            clearTimeout(this.autosaveTimer);
+            this.autosaveTimer = null;
+        }
         if (this.editor && typeof this.editor.destroy === 'function') {
             this.editor.destroy();
             this.editor = null;

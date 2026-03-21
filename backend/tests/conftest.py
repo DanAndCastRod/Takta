@@ -5,10 +5,18 @@ Uses SQLite in-memory database for isolation and speed.
 Uses db.set_engine() / db.reset_engine() for proper test isolation
 instead of relying on module-level globals.
 """
+from pathlib import Path
+import sys
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import SQLModel, create_engine, Session
 from sqlmodel.pool import StaticPool
+
+# Ensure `backend.*` imports work regardless of current working directory.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from backend.app.main import app
 from backend.app.db import get_session, set_engine, reset_engine

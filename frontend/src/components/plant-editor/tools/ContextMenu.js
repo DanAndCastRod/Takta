@@ -7,6 +7,12 @@ export class ContextMenu {
         this.fabricCanvas = fabricCanvas;
         this.menuElement = null;
         this.targetObject = null;
+        this.menuAbortController = null;
+        this.canvasMouseDownHandler = null;
+        this.canvasContextMenuHandler = null;
+        this.documentClickHandler = null;
+        this.windowScrollHandler = null;
+        this.windowResizeHandler = null;
 
         this.createMenuElement();
         this.setupListeners();
@@ -42,44 +48,52 @@ export class ContextMenu {
         document.body.appendChild(this.menuElement);
 
         // Event listeners for menu items
+        this.menuAbortController = new AbortController();
         this.menuElement.querySelectorAll('button').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const action = e.currentTarget.dataset.action;
                 this.executeAction(action);
                 this.hide();
-            });
+            }, { signal: this.menuAbortController.signal });
         });
     }
 
     setupListeners() {
         const canvas = this.fabricCanvas.canvas;
+        if (!canvas) return;
 
         // Right click on object
-        canvas.on('mouse:down', (opt) => {
+        this.canvasMouseDownHandler = (opt) => {
             if (opt.e.button === 2 && opt.target) {
                 opt.e.preventDefault();
                 this.targetObject = opt.target;
                 canvas.setActiveObject(opt.target);
                 this.show(opt.e.clientX, opt.e.clientY);
             }
-        });
+        };
+        canvas.on('mouse:down', this.canvasMouseDownHandler);
 
         // Disable default context menu on canvas
-        canvas.upperCanvasEl.addEventListener('contextmenu', (e) => e.preventDefault());
+        this.canvasContextMenuHandler = (event) => event.preventDefault();
+        canvas.upperCanvasEl?.addEventListener('contextmenu', this.canvasContextMenuHandler);
 
         // Hide menu on click outside
-        document.addEventListener('click', (e) => {
-            if (!this.menuElement.contains(e.target)) {
+        this.documentClickHandler = (event) => {
+            if (this.menuElement && !this.menuElement.contains(event.target)) {
                 this.hide();
             }
-        });
+        };
+        document.addEventListener('click', this.documentClickHandler);
 
         // Hide on scroll/resize
-        window.addEventListener('scroll', () => this.hide());
-        window.addEventListener('resize', () => this.hide());
+        this.windowScrollHandler = () => this.hide();
+        this.windowResizeHandler = () => this.hide();
+        window.addEventListener('scroll', this.windowScrollHandler);
+        window.addEventListener('resize', this.windowResizeHandler);
     }
 
     show(x, y) {
+        if (!this.menuElement) return;
         this.menuElement.style.left = `${x}px`;
         this.menuElement.style.top = `${y}px`;
         this.menuElement.classList.remove('hidden');
@@ -95,6 +109,10 @@ export class ContextMenu {
     }
 
     hide() {
+        if (!this.menuElement) {
+            this.targetObject = null;
+            return;
+        }
         this.menuElement.classList.add('hidden');
         this.targetObject = null;
     }
@@ -145,4 +163,39 @@ export class ContextMenu {
         canvas.setActiveObject(cloned);
         canvas.renderAll();
     }
+
+    destroy() {
+        this.hide();
+        const canvas = this.fabricCanvas?.canvas;
+        if (canvas && this.canvasMouseDownHandler) {
+            canvas.off('mouse:down', this.canvasMouseDownHandler);
+        }
+        if (canvas?.upperCanvasEl && this.canvasContextMenuHandler) {
+            canvas.upperCanvasEl.removeEventListener('contextmenu', this.canvasContextMenuHandler);
+        }
+        if (this.documentClickHandler) {
+            document.removeEventListener('click', this.documentClickHandler);
+        }
+        if (this.windowScrollHandler) {
+            window.removeEventListener('scroll', this.windowScrollHandler);
+        }
+        if (this.windowResizeHandler) {
+            window.removeEventListener('resize', this.windowResizeHandler);
+        }
+        this.canvasMouseDownHandler = null;
+        this.canvasContextMenuHandler = null;
+        this.documentClickHandler = null;
+        this.windowScrollHandler = null;
+        this.windowResizeHandler = null;
+        if (this.menuAbortController) {
+            this.menuAbortController.abort();
+            this.menuAbortController = null;
+        }
+        if (this.menuElement?.parentNode) {
+            this.menuElement.parentNode.removeChild(this.menuElement);
+        }
+        this.menuElement = null;
+        this.targetObject = null;
+    }
 }
+

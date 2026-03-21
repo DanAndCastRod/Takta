@@ -1,145 +1,83 @@
 # FASE 2: Motor Documental (Gestión del Conocimiento)
 
-> **Estado**: Completada (MVP) ✅
-> **Objetivo**: Digitalizar la creación de documentación (SOPs, LUPs) usando Editor.js.
-> **Fecha de Cierre**: 2026-02-24
-> **Última Auditoría**: 2026-02-27
+> **Estado**: ✅ Implementada en alcance Full  
+> **Última auditoría técnica**: 2026-03-03  
+> **Objetivo**: Digitalizar SOPs/LUPs en Editor.js con trazabilidad por activo y ciclo completo de vida del documento.
 
 ---
 
-## 📅 Sprint 3: Backend Documental (Semana 3) ✅
+## Resumen Ejecutivo
 
-### 🎯 Objetivos
-- Sistema de Plantillas (Ingesta de `ie_formats`).
-- Almacenamiento de Documentos (JSON Blob).
+La fase documental quedó cerrada en backend y frontend.
 
-### 📋 Checklist Técnico
-
-| Tarea | Alcance | Estado |
-|-------|---------|--------|
-| Modelo `FormatTemplate` + `FormatInstance` | **MVP** | ✅ |
-| API Ingesta de templates (`/templates/ingest`) | **MVP** | ✅ |
-| API Listar templates por categoría | **MVP** | ✅ |
-| API Guardar/Leer documentos JSON | **MVP** | ✅ |
-| API Render HTML/Markdown | Full | ⬜ Pendiente |
-
-- **Modelos**:
-    - [x] `FormatTemplate`: Estructura base con `code`, `name`, `category`, `markdown_structure`, `json_schema_structure`.
-    - [x] `FormatInstance`: Instancia diligenciada con `template_id`, `asset_id`, `user_id`, `content_json`.
-- **API (`/api/templates`):**
-    - [x] `POST /api/templates/ingest`: Escanea recursivamente `templates/ie_formats`, parsea nombre del H1, categoría del directorio padre, y upserta en BD.
-    - [x] `GET /api/templates/`: Lista todos los formatos con metadata.
-- **API (`/api/documents`):**
-    - [x] `POST /api/documents/`: Guarda JSON de Editor.js vinculado a template + asset.
-    - [x] `GET /api/documents/{id}`: Recupera un documento por UUID.
-    - [x] `GET /api/documents/asset/{asset_id}`: Lista documentos asociados a un activo (incluye nombre del template vía JOIN).
-    - [ ] `GET /api/documents/{id}/render`: Retornar HTML/Markdown. *(Full, pendiente)*
-- **🧪 Testing**:
-    - [x] Tests de ingestión de templates (`test_templates.py`).
-    - [x] Tests de CRUD de documentos (`test_documents.py`).
-    - [x] Tests pasando (cobertura funcional de templates + documents).
-
-### 📁 Archivos Implementados
-
-| Archivo | Ruta | Estado |
-|---------|------|--------|
-| `templates.py` | `backend/app/api/routers/templates.py` | ✅ Verificado |
-| `documents.py` | `backend/app/api/routers/documents.py` | ✅ Verificado |
-| `test_templates.py` | `backend/tests/test_templates.py` | ✅ Verificado |
-| `test_documents.py` | `backend/tests/test_documents.py` | ✅ Verificado |
+- Plantillas base ingeridas desde `templates/ie_formats/`.
+- Editor Docs operativo con selector de plantilla y edición por bloques.
+- Bandeja de documentos creada (`#/documents`) con visualización, filtro y eliminación.
+- Flujo Full Scope habilitado: render, autosave, variables de contexto e imágenes.
 
 ---
 
-## 📅 Sprint 4: Frontend Editor (Semana 4) ✅
+## Sprint 3: Backend Documental
 
-### 🎯 Objetivos
-- Integración de Editor.js V2.
-- Interfaz de "Nuevo Documento".
+### Implementado
 
-### 📋 Checklist Técnico
+- ✅ Plantillas:
+  - `POST /api/templates/ingest`
+  - `GET /api/templates`
+- ✅ Documentos base:
+  - `POST /api/documents`
+  - `GET /api/documents`
+  - `GET /api/documents/{id}`
+  - `GET /api/documents/asset/{asset_id}`
+  - `DELETE /api/documents/{id}`
+- ✅ Full Scope documental:
+  - `PATCH /api/documents/{id}` (actualización de contenido y contexto)
+  - `POST /api/documents/autosave`
+  - `GET /api/documents/{id}/render?output_format=html|markdown`
+  - `POST /api/documents/images` (subida de imágenes para Editor.js)
 
-| Tarea | Alcance | Estado |
-|-------|---------|--------|
-| Editor.js con plugins core (Header, List, Table, Warning, Delimiter, Quote, Marker, Image) | **MVP** | ✅ |
-| Parser Markdown → Bloques Editor.js | **MVP** | ✅ |
-| Modal "Seleccionar Tipo de Formato" (Card Grid por categoría) | **MVP** | ✅ |
-| Inyección de Template pre-cargado en editor | **MVP** | ✅ |
-| Botón "Guardar" flotante con feedback visual | **MVP** | ✅ |
-| Inyección de Variables (`{{asset_name}}`) | Full | ⬜ Pendiente |
-| Auto-save | Full | ⬜ Pendiente |
-| Subida de imágenes (Base64 o endpoint) | Full | ⬜ Pendiente |
+### Evidencia backend
 
-- **Infraestructura**:
-    - [x] CDN de Editor.js v2.30.8 + 8 plugins inyectados en `index.html`.
-    - [x] `editor.config.js`: Configuración centralizada de herramientas + i18n español.
-    - [x] `markdownToBlocks.js`: Parser Markdown → Bloques (headers h1-h6, listas, tablas, delimitadores, párrafos).
-- **Componentes UI**:
-    - [x] `TemplateSelector.js`: Grid de tarjetas agrupadas por categoría (BPM, Lean, TPM, 6S, Kaizen, Kanban). Fetch desde `/api/templates/`.
-    - [x] `EditorCanvas.js`: Wrapper Editor.js con cabecera (template name, asset name, botón volver), lienzo de edición, y botón flotante 💾 con estados (saving → success → reset).
-    - [x] `DocumentEditorPage.js`: Controlador de página bi-fase (selector → editor) con soporte de query params.
-- **Integración**:
-    - [x] `router.js`: Soporte para query parameters en hash routing (`?assetId=...&templateId=...`).
-    - [x] `main.js`: Ruta `/editor` registrada en router autenticado.
-    - [x] `AssetDetail.js`: Botón **+ Nuevo Documento** en cabecera del activo (navega a `#/editor?assetId={id}`).
-- **Build**:
-    - [x] Vite build funcional (producción).
-
-### 📁 Archivos Creados
-
-| Archivo | Ruta | Estado |
-|---------|------|--------|
-| `markdownToBlocks.js` | `frontend/src/services/markdownToBlocks.js` | ✅ Verificado |
-| `editor.config.js` | `frontend/src/services/editor.config.js` | ✅ Verificado |
-| `TemplateSelector.js` | `frontend/src/components/editor/TemplateSelector.js` | ✅ Verificado |
-| `EditorCanvas.js` | `frontend/src/components/editor/EditorCanvas.js` | ✅ Verificado |
-| `DocumentEditorPage.js` | `frontend/src/pages/DocumentEditorPage.js` | ✅ Verificado |
-
-### 📁 Archivos Modificados
-
-| Archivo | Cambio | Estado |
-|---------|--------|--------|
-| `index.html` | CDN scripts Editor.js + estilos canvas | ✅ Verificado |
-| `router.js` | Query params en hash routing | ✅ Verificado |
-| `main.js` | Ruta `/editor` | ✅ Verificado |
-| `AssetDetail.js` | Botón `+ Nuevo Documento` | ✅ Verificado |
-| `api.client.js` | Base URL corregida a `/api` (proxy Vite) | ✅ Verificado |
-
-### 🔄 Flujo de Creación de Documento
-
-```mermaid
-flowchart LR
-    A[AssetDetail] -->|"+ Nuevo Documento"| B["#/editor?assetId={id}"]
-    B --> C[TemplateSelector]
-    C -->|"Clic en plantilla"| D["#/editor?templateId={id}&assetId={id}"]
-    D --> E[Parser MD → Bloques]
-    E --> F[EditorCanvas]
-    F -->|"💾 Guardar"| G["POST /api/documents/"]
-    G --> H[✅ Documento guardado en BD]
-```
-
-### 🧪 Criterios de Aceptación — Resultado
-
-| Criterio | Resultado |
-|----------|-----------|
-| Usuario puede crear un SOP desde una plantilla | ✅ |
-| El documento guarda el ID del activo correctamente | ✅ |
-| Build de producción exitoso | ✅ |
+- [documents.py](/D:/Takta/Takta/backend/app/api/routers/documents.py)
+- [documents_advanced.py](/D:/Takta/Takta/backend/app/api/documents_advanced.py)
+- [test_documents.py](/D:/Takta/Takta/backend/tests/test_documents.py)
+- [test_templates.py](/D:/Takta/Takta/backend/tests/test_templates.py)
 
 ---
 
-## 📌 Items Pendientes (Full Scope)
+## Sprint 4: Frontend Editor
 
-| Item | Estado | Sprint Sugerido |
-|------|--------|-----------------|
-| `GET /documents/{id}/render` (HTML/Markdown) | ⬜ Pendiente | Sprint 7+ |
-| Inyección de Variables (`{{asset_name}}`) | ⬜ Pendiente | Sprint 7+ |
-| Auto-save periódico | ⬜ Pendiente | Sprint 7+ |
-| Subida de imágenes | ⬜ Pendiente | Sprint 7+ |
+### Implementado
 
-## 📊 Métricas (al cierre de auditoría)
+- ✅ Editor.js con plugins core (Header, List, Table, Warning, Delimiter, Quote, Marker, Image).
+- ✅ Selector de plantillas por categoría.
+- ✅ Parse markdown → bloques para plantillas base.
+- ✅ Guardado manual y autosave.
+- ✅ Inyección de variables y trazabilidad contextual desde módulo origen.
+- ✅ Soporte de imágenes por endpoint autenticado.
+- ✅ Ruta de edición por `documentId` para retomar documentos existentes.
+- ✅ Bandeja global de documentos (`#/documents`).
 
-| Métrica | Valor |
-|---------|-------|
-| Backend tests acumulados | **47 passed** |
-| Frontend tests acumulados | **5 passed** |
-| Total tests proyecto | **52** |
+### Evidencia frontend
+
+- [DocumentEditorPage.js](/D:/Takta/Takta/frontend/src/pages/DocumentEditorPage.js)
+- [EditorCanvas.js](/D:/Takta/Takta/frontend/src/components/editor/EditorCanvas.js)
+- [editor.config.js](/D:/Takta/Takta/frontend/src/services/editor.config.js)
+- [DocumentsPage.js](/D:/Takta/Takta/frontend/src/pages/DocumentsPage.js)
+
+---
+
+## Criterios de Aceptación (Estado)
+
+1. Crear documento desde plantilla y asociarlo a activo: ✅  
+2. Editar/reabrir documento existente: ✅  
+3. Renderizar documento en HTML/Markdown: ✅  
+4. Autosave funcional durante edición: ✅  
+5. Cargar imágenes en el contenido: ✅  
+6. Listar y eliminar documentos desde bandeja: ✅
+
+---
+
+## Notas de QA
+
+- Ver guía manual front: [GUIA_QA_MANUAL_FRONT_V1.md](/D:/Takta/Takta/plans/v1/GUIA_QA_MANUAL_FRONT_V1.md)

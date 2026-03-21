@@ -1,4 +1,4 @@
-/**
+﻿/**
  * TemplateSelector.js
  * 
  * Displays a grid of template cards grouped by category.
@@ -11,16 +11,27 @@ class TemplateSelector {
      * @param {HTMLElement} container - DOM element to render into
      * @param {function} onSelect - Callback when a template is selected: (template) => void
      */
-    constructor(container, onSelect) {
+    constructor(container, onSelect, options = {}) {
         this.container = container;
         this.onSelect = onSelect;
         this.templates = [];
+        this.assetId = options.assetId || null;
+        this.assetName = options.assetName || '';
     }
 
     async load() {
         this.renderLoading();
         try {
-            this.templates = await ApiClient.get('/templates/');
+            this.templates = await ApiClient.get('/templates');
+            const needsSync = !this.templates.length || this.templates.some((tpl) => {
+                const markdown = tpl?.markdown_structure || '';
+                return !markdown.includes('## Contexto Integrado Takta');
+            });
+            if (needsSync) {
+                // Auto-bootstrap once to avoid forcing manual API calls in fresh environments.
+                await ApiClient.post('/templates/ingest', {});
+                this.templates = await ApiClient.get('/templates');
+            }
             this.render();
         } catch (error) {
             console.error('TemplateSelector: failed to load templates', error);
@@ -84,9 +95,21 @@ class TemplateSelector {
         this.container.innerHTML = `
             <div class="max-w-5xl mx-auto p-6">
                 <!-- Header -->
-                <div class="mb-8">
-                    <h1 class="text-2xl font-bold text-slate-900">Seleccionar Plantilla</h1>
-                    <p class="text-slate-500 mt-1">Elige un formato estándar de Ingeniería Industrial para crear un nuevo documento.</p>
+                <div class="mb-8 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <h1 class="text-2xl font-bold text-slate-900">Crear Nuevo Documento</h1>
+                            <p class="text-slate-500 mt-1">Paso 1: selecciona una plantilla. Paso 2: completa contenido. Paso 3: guarda el documento.</p>
+                        </div>
+                        <button id="ingest-templates-btn" class="px-3 py-2 rounded-lg border border-slate-200 text-sm text-slate-700 hover:bg-slate-50">
+                            Cargar plantillas base
+                        </button>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
+                        ${this.assetId
+                ? `<p class="text-slate-700">Contexto activo: <span class="font-semibold">${this.assetName || this.assetId}</span></p>`
+                : `<p class="text-slate-600">Sin activo asociado. El documento se creará como general. Si necesitas asociarlo, abre este flujo desde <a href="#/assets" class="text-blue-600 hover:text-blue-700 font-medium">Árbol de Activos</a>.</p>`}
+                    </div>
                 </div>
 
                 <!-- Category Sections -->
@@ -115,6 +138,7 @@ class TemplateSelector {
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                             </svg>
                                         </div>
+                                        <p class="mt-3 text-xs font-semibold text-blue-600 group-hover:text-blue-700">Crear documento con esta plantilla</p>
                                     </button>
                                 `).join('')}
                             </div>
@@ -144,7 +168,19 @@ class TemplateSelector {
                 }
             });
         });
+
+        this.container.querySelector('#ingest-templates-btn')?.addEventListener('click', async () => {
+            try {
+                await ApiClient.post('/templates/ingest', {});
+                await this.load();
+                alert('Plantillas cargadas/actualizadas correctamente.');
+            } catch (error) {
+                alert(`No fue posible cargar plantillas: ${error.message}`);
+            }
+        });
     }
 }
 
 export default TemplateSelector;
+
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * editor.config.js
  * 
  * Centralized Editor.js tool configuration.
@@ -10,6 +10,24 @@
  * Returns the Editor.js tools configuration object.
  * Must be called AFTER the CDN scripts have loaded.
  */
+async function uploadImageFile(file) {
+    const token = localStorage.getItem('takta_token');
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/documents/images', {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(payload?.detail || `Error subiendo imagen (${response.status})`);
+    }
+    return payload;
+}
+
 export function getEditorTools() {
     const tools = {};
 
@@ -59,7 +77,20 @@ export function getEditorTools() {
         tools.delimiter = window.Delimiter;
     }
 
-    if (window.SimpleImage) {
+    if (window.ImageTool) {
+        tools.image = {
+            class: window.ImageTool,
+            config: {
+                uploader: {
+                    uploadByFile: async (file) => uploadImageFile(file),
+                    uploadByUrl: async (url) => ({
+                        success: 1,
+                        file: { url }
+                    })
+                }
+            }
+        };
+    } else if (window.SimpleImage) {
         tools.image = window.SimpleImage;
     }
 
@@ -117,3 +148,4 @@ export const EDITOR_I18N_ES = {
 };
 
 export default { getEditorTools, EDITOR_I18N_ES };
+

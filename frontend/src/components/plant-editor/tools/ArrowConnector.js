@@ -10,6 +10,9 @@ export class ArrowConnector {
         this.arrows = new Map(); // arrowId -> { line, head, fromObj, toObj }
         this.isConnecting = false;
         this.pendingFrom = null;
+        this.clickHandler = null;
+        this.moveHandler = null;
+        this.modifiedHandler = null;
 
         // Listener para actualizar flechas cuando objetos se mueven
         this.setupMoveListener();
@@ -70,6 +73,8 @@ export class ArrowConnector {
      */
     createArrow(fromObj, toObj) {
         const arrowId = `arrow-${Date.now()}`;
+        const fromAssetId = fromObj?.data?.assetId || fromObj?.assetId || null;
+        const toAssetId = toObj?.data?.assetId || toObj?.assetId || null;
 
         // Guardar referencias originales para restore
         fromObj._originalStroke = fromObj.stroke;
@@ -86,7 +91,11 @@ export class ArrowConnector {
             selectable: false,
             evented: false,
             arrowId: arrowId,
-            objectType: 'arrowLine'
+            objectType: 'arrowLine',
+            flowData: {
+                fromAssetId,
+                toAssetId,
+            },
         });
 
         // Crear cabeza de flecha
@@ -162,7 +171,7 @@ export class ArrowConnector {
      * Configura listener para actualizar flechas cuando objetos se mueven
      */
     setupMoveListener() {
-        this.fabricCanvas.canvas.on('object:moving', (opt) => {
+        this.moveHandler = (opt) => {
             const obj = opt.target;
             if (obj.connectedArrows && obj.connectedArrows.length > 0) {
                 obj.connectedArrows.forEach(arrowId => {
@@ -170,10 +179,11 @@ export class ArrowConnector {
                 });
                 this.fabricCanvas.canvas.renderAll();
             }
-        });
+        };
+        this.fabricCanvas.canvas.on('object:moving', this.moveHandler);
 
         // También actualizar al soltar
-        this.fabricCanvas.canvas.on('object:modified', (opt) => {
+        this.modifiedHandler = (opt) => {
             const obj = opt.target;
             if (obj.connectedArrows && obj.connectedArrows.length > 0) {
                 obj.connectedArrows.forEach(arrowId => {
@@ -181,7 +191,8 @@ export class ArrowConnector {
                 });
                 this.fabricCanvas.canvas.renderAll();
             }
-        });
+        };
+        this.fabricCanvas.canvas.on('object:modified', this.modifiedHandler);
     }
 
     /**
@@ -219,4 +230,19 @@ export class ArrowConnector {
             this.removeArrow(arrowId);
         });
     }
+
+    destroy() {
+        this.stopConnecting();
+        if (!this.fabricCanvas?.canvas) return;
+        if (this.moveHandler) {
+            this.fabricCanvas.canvas.off('object:moving', this.moveHandler);
+        }
+        if (this.modifiedHandler) {
+            this.fabricCanvas.canvas.off('object:modified', this.modifiedHandler);
+        }
+        this.moveHandler = null;
+        this.modifiedHandler = null;
+        this.arrows.clear();
+    }
 }
+

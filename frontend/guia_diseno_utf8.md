@@ -1,54 +1,158 @@
-﻿## Design System: Takta
+# Guia de Diseno UI/UX - Takta
 
-### Pattern
-- **Name:** Enterprise Gateway
-- **Conversion Focus:**  logo carousel,  tab switching for industries, Path selection (I am a...). Mega menu navigation. Trust signals prominent.
-- **CTA Placement:** Contact Sales (Primary) + Login (Secondary)
-- **Color Strategy:** Corporate: Navy/Grey. High integrity. Conservative accents.
-- **Sections:** 1. Hero (Video/Mission), 2. Solutions by Industry, 3. Solutions by Role, 4. Client Logos, 5. Contact Sales
+Version: 2.1  
+Fecha: 2026-03-09  
+Estado: Activa (sincronizada con `frontend/guia_diseno.md`)
 
-### Style
-- **Name:** Trust & Authority
-- **Keywords:** Certificates/badges displayed, expert credentials, case studies with metrics, before/after comparisons, industry recognition, security badges
-- **Best For:** Healthcare/medical landing pages, financial services, enterprise software, premium/luxury products, legal services
-- **Performance:** ÔÜí Excellent | **Accessibility:** Ô£ô WCAG AAA
+---
 
-### Colors
-| Role | Hex |
-|------|-----|
-| Primary | #64748B |
-| Secondary | #94A3B8 |
-| CTA | #F97316 |
-| Background | #F8FAFC |
-| Text | #334155 |
+## 1. Objetivo de diseno
 
-*Notes: Industrial grey + safety orange*
+Takta es un ecosistema industrial para captura de informacion, diagnostico y centralizacion operacional.
+La interfaz debe priorizar:
 
-### Typography
-- **Heading:** Inter
-- **Body:** Inter
-- **Mood:** minimal, clean, swiss, functional, neutral, professional
-- **Best For:** Dashboards, admin panels, documentation, enterprise apps, design systems
-- **Google Fonts:** https://fonts.google.com/share?selection.family=Inter:wght@300;400;500;600;700
-- **CSS Import:**
-```css
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-```
+- Claridad de datos en contexto de planta.
+- Navegacion rapida entre modulos conectados.
+- Trazabilidad visual entre operacion, calidad y mejora.
+- Escalabilidad para modelo white-label.
 
-### Key Effects
-Badge hover effects, metric pulse animations, certificate carousel, smooth stat reveal
+---
 
-### Avoid (Anti-patterns)
-- Playful design
-- Hidden credentials
-- AI purple/pink gradients
+## 2. Principios UX
 
-### Pre-Delivery Checklist
-- [ ] No emojis as icons (use SVG: Heroicons/Lucide)
-- [ ] cursor-pointer on all clickable elements
-- [ ] Hover states with smooth transitions (150-300ms)
-- [ ] Light mode: text contrast 4.5:1 minimum
-- [ ] Focus states visible for keyboard nav
-- [ ] prefers-reduced-motion respected
-- [ ] Responsive: 375px, 768px, 1024px, 1440px
+1. Context first: activo, SKU y estandar deben estar visibles o inferibles.
+2. Menos clics: acciones frecuentes deben estar a 1-2 interacciones.
+3. Evidencia sobre opinion: toda decision debe tener soporte en datos.
+4. Feedback no bloqueante: usar toasts, estados y banners, no alert modal del navegador.
+5. Flujo continuo: evitar pantallas muertas y ofrecer CTA de salida en estados vacios.
 
+---
+
+## 3. Direccion visual armonizada
+
+Patron principal: `Enterprise + Documentation Landing`  
+Estilo: `Minimal Swiss` con identidad industrial.
+
+### Colores
+
+- Brand base: `#1e293b` (navy/slate).
+- CTA principal URiT: `#00B8D4` (cian profundo).
+- Hover CTA: `#0097A7`.
+- Fondo app: `#f8fafc`.
+- Texto principal: `#1E293B`.
+- Texto secundario: `#475569`.
+- Texto terciario: `#94A3B8`.
+- Apoyo docs/trust (secundario): `#0ea5e9` / `#38bdf8`.
+
+### Tipografia
+
+- Heading/logo: `Outfit`.
+- Body/UI: `Inter`.
+- Data/metricas: `Space Grotesk`.
+- Subtitulos suaves: `DM Sans`.
+- Jerarquia:
+  - H1: 32-48 px, semibold/bold.
+  - H2: 24-32 px, semibold.
+  - Cuerpo: 14-16 px regular/medium.
+  - Microcopy: 11-12 px medium.
+
+### Apariencia general
+
+- Bordes suaves (`rounded-lg`/`rounded-xl`).
+- Superficies limpias con contraste alto.
+- Uso moderado de glass en shell/hero, sin ruido visual.
+- Iconografia SVG (Lucide/Heroicons). No emojis.
+
+---
+
+## 4. Tokens y clases base
+
+Se estandariza el uso de:
+
+- `tk-btn-primary`, `tk-btn-secondary`, `tk-btn-danger`
+- `tk-card`
+- `tk-input`, `tk-select`, `tk-textarea`
+- `tk-feedback-success`, `tk-feedback-error`
+- `tk-empty-state`, `tk-badge`
+
+Variables CSS base en `src/style.css`:
+
+- `--brand-orange`, `--brand-orange-dark` (alias historico, ahora mapeado a cian URiT)
+- `--surface`, `--surface-soft`, `--surface-muted`
+- `--text-primary`, `--text-secondary`, `--text-muted`
+- `--border-subtle`, `--focus-ring`
+
+---
+
+## 5. Estructura de pantallas
+
+### Shell autenticado
+
+- Navbar sticky, sidebar responsive, content scrollable.
+- Focus visible y cierre por `Escape` en overlays/modales.
+- Indicador de conectividad y estado de sincronizacion.
+
+### Landing publica y Docs
+
+- Rutas:
+  - `#/landing` -> overview de plataforma.
+  - `#/docs` -> guia de usuario completa.
+- Hero con mensaje de valor y CTA claro a login/docs.
+- Catalogo funcional por modulo.
+- Guia con filtro, navegacion lateral y secciones por rol/modulo.
+
+---
+
+## 6. Accesibilidad y motion
+
+- Contraste minimo WCAG 4.5:1 en light mode.
+- `focus-visible` consistente en elementos interactivos.
+- Respetar `prefers-reduced-motion`.
+- Objetivos tactiles minimos de 44x44 px (ideal 48 px en planta).
+- Navegacion por teclado funcional en flujos principales.
+
+---
+
+## 7. Responsive obligatorio
+
+Validar en:
+
+- 375 px (mobile)
+- 768 px (tablet)
+- 1024 px (desktop small)
+- 1440 px (desktop wide)
+
+Reglas:
+
+- Cero scroll horizontal inesperado.
+- Sidebars y paneles con comportamiento predecible.
+- Grids degradan a 1 columna en mobile cuando aplique.
+
+---
+
+## 8. Contenido y microcopy
+
+- Lenguaje claro, tecnico y accionable.
+- Titulos orientados a tarea ("Registrar paro", "Cargar estandar").
+- Mensajes de error con causa + siguiente accion.
+- Evitar texto ambiguo tipo "Algo salio mal" sin contexto.
+
+---
+
+## 9. Checklist de entrega UI
+
+- [ ] No hay emojis usados como iconos.
+- [ ] Todos los elementos clickeables tienen `cursor-pointer`.
+- [ ] Estados hover/focus/disabled definidos.
+- [ ] Formularios con label visible y feedback claro.
+- [ ] Layout estable sin saltos por hover/animaciones.
+- [ ] Revisado en 375/768/1024/1440.
+- [ ] Sin caracteres corruptos de encoding.
+
+---
+
+## 10. Politica de sincronizacion de guias
+
+- `frontend/guia_diseno_utf8.md` y `frontend/guia_diseno.md` deben tener el mismo contenido.
+- Cualquier cambio de lineamientos debe aplicarse a ambos archivos en el mismo commit.
+- Si existe divergencia, tomar `guia_diseno_utf8.md` como referencia y resincronizar.

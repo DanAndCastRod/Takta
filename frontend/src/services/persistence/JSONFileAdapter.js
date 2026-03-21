@@ -1,4 +1,4 @@
-import { StorageAdapter } from './StorageAdapter';
+﻿import { StorageAdapter } from './StorageAdapter.js';
 
 /**
  * Adaptador para persistencia basada en archivos JSON (Community Version)
@@ -63,3 +63,4 @@ export class JSONFileAdapter extends StorageAdapter {
         return plants;
     }
 }
+

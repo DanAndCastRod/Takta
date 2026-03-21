@@ -1,4 +1,4 @@
-/**
+﻿/**
  * markdownToBlocks.js
  * 
  * Lightweight Markdown → Editor.js blocks converter.
@@ -123,3 +123,4 @@ export function markdownToBlocks(markdown) {
 }
 
 export default markdownToBlocks;
+

@@ -21,6 +21,8 @@ class CurrentUser(BaseModel):
     role: str = "viewer"
     display_name: Optional[str] = None
     area_id: Optional[str] = None  # Default area for auto-context
+    tenant_id: str = "default"
+    feature_profile: str = "full"
 
 
 # --- Dependencies ---
@@ -63,6 +65,8 @@ async def get_current_user(
         role=payload.get("role", "viewer"),
         display_name=payload.get("name"),
         area_id=payload.get("area_id"),
+        tenant_id=payload.get("tenant_id") or "default",
+        feature_profile=payload.get("feature_profile") or "full",
     )
 
 
@@ -89,7 +93,14 @@ async def get_optional_user(
         role=payload.get("role", "viewer"),
         display_name=payload.get("name"),
         area_id=payload.get("area_id"),
+        tenant_id=payload.get("tenant_id") or "default",
+        feature_profile=payload.get("feature_profile") or "full",
     )
+
+
+def get_tenant_code(user: CurrentUser) -> str:
+    raw = (user.tenant_id or "default").strip()
+    return raw or "default"
 
 
 def require_role(allowed_roles: List[str]):

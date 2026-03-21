@@ -1,8 +1,9 @@
-/**
+﻿/**
  * ApiClient - Wrapper for fetch to interact with the backend API.
  * Handles base URL, JSON parsing, error handling, and JWT injection.
  */
 
+import offlineSyncService from './offline-sync.service.js';
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 class ApiError extends Error {
@@ -26,6 +27,8 @@ class ApiClient {
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
+        const tenantCode = localStorage.getItem('takta.tenant_code') || 'default';
+        headers['X-Takta-Tenant'] = tenantCode;
         return headers;
     }
 
@@ -46,6 +49,25 @@ class ApiClient {
         const normalizedEndpoint = this.normalizePath(endpoint);
         const url = `${API_BASE_URL}${normalizedEndpoint}`;
         const headers = this.getHeaders(options.headers);
+        const method = String(options.method || 'GET').toUpperCase();
+        const hasToken = Boolean(localStorage.getItem('takta_token'));
+
+        // Offline-first write strategy: queue writes when no connectivity.
+        if (!navigator.onLine && !['GET', 'HEAD'].includes(method)) {
+            const payload = options.body ? JSON.parse(options.body) : null;
+            const queued = offlineSyncService.enqueueRequest({
+                method,
+                endpoint: normalizedEndpoint,
+                body: payload,
+                headers,
+            });
+            return {
+                queued: true,
+                offline: true,
+                queue_id: queued.id,
+                message: 'Solicitud en cola offline. Se sincronizará al recuperar conexión.',
+            };
+        }
 
         try {
             const response = await fetch(url, {
@@ -55,9 +77,12 @@ class ApiClient {
 
             // Handle 401 Unauthorized globally
             if (response.status === 401) {
-                // Clear token and trigger custom event to log out
-                localStorage.removeItem('takta_token');
-                window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+                // Trigger global logout only when a session token existed.
+                // This avoids unauthorized loops on public/guest bootstrap calls.
+                if (hasToken) {
+                    localStorage.removeItem('takta_token');
+                    window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+                }
                 throw new ApiError(401, 'Unauthorized');
             }
 
@@ -82,6 +107,25 @@ class ApiClient {
             return await response.json();
 
         } catch (error) {
+            if (!['GET', 'HEAD'].includes(method)) {
+                try {
+                    const payload = options.body ? JSON.parse(options.body) : null;
+                    const queued = offlineSyncService.enqueueRequest({
+                        method,
+                        endpoint: normalizedEndpoint,
+                        body: payload,
+                        headers,
+                    });
+                    return {
+                        queued: true,
+                        offline: !navigator.onLine,
+                        queue_id: queued.id,
+                        message: 'Solicitud en cola por fallo de red.',
+                    };
+                } catch {
+                    // If payload parsing fails, preserve previous error behavior.
+                }
+            }
             console.error(`[ApiClient Error] ${options.method || 'GET'} ${endpoint}`, error);
             throw error;
         }
@@ -118,6 +162,11 @@ class ApiClient {
     static delete(endpoint, headers = {}) {
         return this.request(endpoint, { method: 'DELETE', headers });
     }
+
+    static flushOfflineQueue() {
+        return offlineSyncService.flushQueue();
+    }
 }
 
 export default ApiClient;
+

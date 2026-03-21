@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session
 from ...db import get_session
 from ...services.capacity_engine import CapacityEngine
+from ...core.auth import get_current_user
 import uuid
 import math
 
@@ -12,6 +13,7 @@ router = APIRouter(
     prefix="/api/engineering/capacity",
     tags=["Engineering - Capacity"],
     responses={404: {"description": "Not found"}},
+    dependencies=[Depends(get_current_user)],
 )
 
 

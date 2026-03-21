@@ -134,6 +134,9 @@ class TimingEngine:
         return {
             "study_id": str(study_id),
             "study_name": study.name,
+            "process_standard_id": str(study.process_standard_id) if study.process_standard_id else None,
+            "asset_id": str(study.asset_id) if study.asset_id else None,
+            "product_reference_id": str(study.product_reference_id) if study.product_reference_id else None,
             "rating_factor": study.rating_factor,
             "supplements_pct": study.supplements_pct,
             "elements": element_results,

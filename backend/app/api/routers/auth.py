@@ -34,6 +34,8 @@ class UserCreateRequest(BaseModel):
     password: str
     role: str = "viewer"
     display_name: Optional[str] = None
+    tenant_id: str = "default"
+    feature_profile: str = "full"
 
 
 # --- In-Memory User Store (MVP) ---
@@ -44,18 +46,24 @@ _users_db: dict = {
         "hashed_password": get_password_hash("admin123"),
         "role": "admin",
         "display_name": "Administrador",
+        "tenant_id": "default",
+        "feature_profile": "full",
     },
     "ingeniero": {
         "username": "ingeniero",
         "hashed_password": get_password_hash("takta2026"),
         "role": "engineer",
         "display_name": "Ingeniero de Procesos",
+        "tenant_id": "default",
+        "feature_profile": "full",
     },
     "supervisor": {
         "username": "supervisor",
         "hashed_password": get_password_hash("takta2026"),
         "role": "supervisor",
         "display_name": "Supervisor de Planta",
+        "tenant_id": "default",
+        "feature_profile": "full",
     },
 }
 
@@ -81,6 +89,8 @@ def login(request: LoginRequest):
         "sub": user["username"],
         "role": user["role"],
         "name": user["display_name"],
+        "tenant_id": user.get("tenant_id", "default"),
+        "feature_profile": user.get("feature_profile", "full"),
     })
     
     return TokenResponse(
@@ -89,6 +99,8 @@ def login(request: LoginRequest):
             "username": user["username"],
             "role": user["role"],
             "display_name": user["display_name"],
+            "tenant_id": user.get("tenant_id", "default"),
+            "feature_profile": user.get("feature_profile", "full"),
         }
     )
 
@@ -104,6 +116,8 @@ def get_me(user: CurrentUser = Depends(get_current_user)):
         "role": user.role,
         "display_name": user.display_name,
         "area_id": user.area_id,
+        "tenant_id": user.tenant_id,
+        "feature_profile": user.feature_profile,
     }
 
 
@@ -130,6 +144,8 @@ def register_user(request: UserCreateRequest, admin: CurrentUser = Depends(get_c
         "hashed_password": get_password_hash(request.password),
         "role": request.role,
         "display_name": request.display_name or request.username,
+        "tenant_id": request.tenant_id or "default",
+        "feature_profile": request.feature_profile or "full",
     }
     
     return {"message": f"User '{request.username}' created", "role": request.role}

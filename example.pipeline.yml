@@ -1,0 +1,138 @@
+trigger:
+- main
+
+pr:
+- main
+
+variables:
+  FRONTEND_DIR: 'frontend'
+  BACKEND_DIR: 'backend'
+  ARTIFACT_NAME: 'takta_drop'
+  BACKEND_DEST: 'C:\Analitica\python\API_takta'
+  FRONTEND_DEST: 'C:\Users\iot.td\.node-red\public\Takta'
+  PM2_APP_NAME: 'takta-api'
+  BACKEND_PORT: '8105'
+  CORS_ORIGINS: 'https://biosapps.grupobios.co'
+  SQLITE_PATH: 'C:\Analitica\python\API_takta\data\takta_bios.db'
+
+stages:
+- stage: Build
+  displayName: Build and package
+  jobs:
+  - job: BuildFrontend
+    displayName: Build frontend artifact
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '20.x'
+      displayName: Use Node 20
+
+    - script: |
+        npm ci --prefix $(FRONTEND_DIR)
+        npm run build --prefix $(FRONTEND_DIR)
+      displayName: Build frontend
+
+    - task: CopyFiles@2
+      displayName: Stage frontend dist
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)\$(FRONTEND_DIR)\dist'
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)\frontend_dist'
+
+    - task: CopyFiles@2
+      displayName: Stage backend source
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)\$(BACKEND_DIR)'
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)\backend_src'
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish artifact
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: '$(ARTIFACT_NAME)'
+        publishLocation: 'Container'
+
+- stage: DeployPrivate
+  displayName: Deploy to private server paths
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - deployment: DeployWindowsPrivate
+    displayName: Deploy backend + frontend on private server
+    environment: 'takta-private'
+    pool:
+      name: 'Default'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: '$(ARTIFACT_NAME)'
+
+          - powershell: |
+              $ErrorActionPreference = 'Stop'
+
+              function Invoke-Robocopy {
+                param(
+                  [string]$Source,
+                  [string]$Target,
+                  [string]$ExtraArgs = ''
+                )
+
+                $cmd = "robocopy `"$Source`" `"$Target`" /MIR $ExtraArgs"
+                Write-Host "Running: $cmd"
+                Invoke-Expression $cmd | Out-Null
+                $rc = $LASTEXITCODE
+                # Robocopy returns 0-7 for success/acceptable states.
+                if ($rc -gt 7) {
+                  throw "Robocopy failed with exit code $rc. Source=$Source Target=$Target"
+                }
+              }
+
+              $artifactRoot = "$(Pipeline.Workspace)\$(ARTIFACT_NAME)"
+              $backendSource = Join-Path $artifactRoot 'backend_src'
+              $frontendSource = Join-Path $artifactRoot 'frontend_dist'
+              $backendDest = "$(BACKEND_DEST)"
+              $frontendDest = "$(FRONTEND_DEST)"
+              $pm2App = "$(PM2_APP_NAME)"
+              $port = "$(BACKEND_PORT)"
+              $sqlitePath = "$(SQLITE_PATH)"
+
+              Write-Host "Backend source: $backendSource"
+              Write-Host "Backend dest  : $backendDest"
+              Write-Host "Frontend source: $frontendSource"
+              Write-Host "Frontend dest  : $frontendDest"
+
+              New-Item -ItemType Directory -Path $backendDest -Force | Out-Null
+              New-Item -ItemType Directory -Path $frontendDest -Force | Out-Null
+              New-Item -ItemType Directory -Path (Split-Path $sqlitePath -Parent) -Force | Out-Null
+
+              Invoke-Robocopy -Source $backendSource -Target $backendDest -ExtraArgs '/XD "__pycache__" ".pytest_cache" ".venv" /XF "*.pyc"'
+              Invoke-Robocopy -Source $frontendSource -Target $frontendDest
+
+              $venvPath = Join-Path $backendDest '.venv'
+              if (-not (Test-Path $venvPath)) {
+                python -m venv $venvPath
+              }
+
+              $pythonExe = Join-Path $venvPath 'Scripts\python.exe'
+              & $pythonExe -m pip install --upgrade pip
+              & $pythonExe -m pip install -r (Join-Path $backendDest 'requirements.txt')
+
+              $env:PYTHONPATH = $backendDest
+              $env:CORS_ORIGINS = "$(CORS_ORIGINS)"
+              $env:SQLITE_PATH = $sqlitePath
+
+              $exists = (pm2 jlist | ConvertFrom-Json | Where-Object { $_.name -eq $pm2App })
+              if ($exists) {
+                pm2 restart $pm2App --update-env
+              } else {
+                pm2 start $pythonExe --name $pm2App --cwd $backendDest --interpreter none -- -m uvicorn app.main:app --host 0.0.0.0 --port $port
+              }
+
+              pm2 save
+              pm2 status
+            displayName: Deploy files, install deps, restart PM2

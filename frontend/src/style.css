@@ -2,10 +2,256 @@
 
 /* Takta Custom Styles will go here */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-family-runtime: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-family-heading: "Outfit", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-family-data: "Space Grotesk", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-family-ui-soft: "DM Sans", "Inter", "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-family-runtime);
+  --brand-orange: #00b8d4;
+  --brand-orange-dark: #0097a7;
+  /* Keep Tailwind utility + custom utility aligned */
+  --color-brand-orange: #00b8d4;
+  --color-brand-orange-dark: #0097a7;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --surface-muted: #f1f5f9;
+  --border-subtle: #e2e8f0;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+  --success: #059669;
+  --success-soft: #d1fae5;
+  --warning: #d97706;
+  --warning-soft: #fef3c7;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --focus-ring: 0 0 0 3px rgba(0, 184, 212, 0.22);
 
   /* Glassmorphism Variables */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(0, 184, 212, 0.15);
+  --glass-shadow: 0 8px 24px 0 rgba(15, 23, 42, 0.08);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-family-heading);
+  color: var(--text-primary);
+}
+
+code,
+pre,
+.tk-metric {
+  font-family: var(--font-family-data);
+}
+
+.tk-soft-copy {
+  font-family: var(--font-family-ui-soft);
+}
+
+.bg-brand-orange {
+  background-color: var(--brand-orange) !important;
+}
+
+.text-brand-orange {
+  color: var(--brand-orange);
+}
+
+.border-brand-orange {
+  border-color: var(--brand-orange);
+}
+
+.bg-brand-orange\/10 {
+  background-color: rgb(249 115 22 / 0.1);
+}
+
+.focus\:border-brand-orange:focus {
+  border-color: var(--brand-orange);
+}
+
+.focus\:ring-brand-orange\/40:focus {
+  --tw-ring-color: rgb(249 115 22 / 0.4);
+}
+
+.tk-btn-primary {
+  background-color: var(--brand-orange);
+  color: #fff;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.tk-btn-primary:hover {
+  background-color: var(--brand-orange-dark);
+  box-shadow: 0 4px 10px rgba(0, 184, 212, 0.18);
+}
+
+.tk-btn-primary:active {
+  transform: translateY(1px);
+}
+
+.tk-btn-secondary {
+  background-color: #fff;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.tk-btn-secondary:hover {
+  background-color: var(--surface-soft);
+  border-color: #cbd5e1;
+  color: var(--text-primary);
+}
+
+.tk-btn-danger {
+  background-color: #fff;
+  border: 1px solid #fecaca;
+  color: var(--danger);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.tk-btn-danger:hover {
+  background-color: var(--danger-soft);
+  border-color: #fca5a5;
+}
+
+.tk-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+/* URiT palette bridge for legacy orange utility classes */
+.bg-orange-50 {
+  background-color: #ecfeff !important;
+}
+
+.bg-orange-100 {
+  background-color: #cffafe !important;
+}
+
+.bg-orange-200 {
+  background-color: #a5f3fc !important;
+}
+
+.text-orange-700 {
+  color: #0e7490 !important;
+}
+
+.text-orange-600 {
+  color: #0891b2 !important;
+}
+
+.border-orange-200 {
+  border-color: rgba(0, 184, 212, 0.3) !important;
+}
+
+.hover\:bg-orange-100:hover {
+  background-color: #cffafe !important;
+}
+
+.hover\:bg-orange-200:hover {
+  background-color: #a5f3fc !important;
+}
+
+.tk-input,
+.tk-select,
+.tk-textarea {
+  width: 100%;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background-color: #fff;
+  color: var(--text-primary);
+}
+
+.tk-input:focus,
+.tk-select:focus,
+.tk-textarea:focus {
+  outline: none;
+  border-color: var(--brand-orange);
+  box-shadow: var(--focus-ring);
+}
+
+.tk-feedback-success {
+  border: 1px solid #6ee7b7;
+  background: var(--success-soft);
+  color: var(--success);
+  border-radius: var(--radius-md);
+}
+
+.tk-feedback-error {
+  border: 1px solid #fca5a5;
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-radius: var(--radius-md);
+}
+
+.tk-empty-state {
+  border: 1px dashed #cbd5e1;
+  background: var(--surface-soft);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+}
+
+.tk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+*:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+html.sidebar-lock,
+body.sidebar-lock {
+  overflow: hidden;
+}
+
+/* Legacy CRUD harmonization for modules still migrating to tk-* classes */
+button[class*="border-red-200"][class*="text-red-700"],
+button[class*="border-red-200"][class*="text-red-600"],
+a[class*="border-red-200"][class*="text-red-700"],
+a[class*="border-red-200"][class*="text-red-600"] {
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+button[class*="border-slate-200"][class*="text-slate-700"],
+a[class*="border-slate-200"][class*="text-slate-700"] {
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+input[class*="border-slate-200"],
+select[class*="border-slate-200"],
+textarea[class*="border-slate-200"] {
+  border-radius: var(--radius-md);
+}
+
+input[class*="border-slate-200"]:focus,
+select[class*="border-slate-200"]:focus,
+textarea[class*="border-slate-200"]:focus {
+  outline: none;
+  border-color: var(--brand-orange);
+  box-shadow: var(--focus-ring);
 }

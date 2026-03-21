@@ -8,6 +8,8 @@ export class FileManager {
         this.autoSaveKey = options.autoSaveKey || 'plant-editor-autosave';
         this.autoSaveInterval = options.autoSaveInterval || 30000; // 30s
         this._autoSaveTimer = null;
+        this._onCanvasModified = null;
+        this.onAutoSave = typeof options.onAutoSave === 'function' ? options.onAutoSave : null;
 
         // Start autosave
         if (options.enableAutoSave !== false) {
@@ -21,13 +23,21 @@ export class FileManager {
     toJSON() {
         if (!this.fabricCanvas.canvas) return null;
 
-        // Include custom properties in serialization
+        if (typeof this.fabricCanvas.toSerializableJSON === 'function') {
+            return this.fabricCanvas.toSerializableJSON();
+        }
+
+        // Fallback for legacy wrappers
         const json = this.fabricCanvas.canvas.toJSON([
             'layerId', 'assetId', 'zoneType', 'customData', 'data',
             'arrowId', 'objectType', 'flowData', 'connectedArrows',
-            'fromObjectId', 'toObjectId'
+            'fromObjectId', 'toObjectId', 'excludeFromExport',
         ]);
-
+        if (Array.isArray(json.objects)) {
+            json.objects = json.objects.filter((obj) => !obj.excludeFromExport
+                && obj.objectType !== 'heatmapOverlay'
+                && obj.objectType !== 'signalOverlayBadge');
+        }
         return json;
     }
 
@@ -155,13 +165,20 @@ export class FileManager {
         this._autoSaveTimer = setInterval(() => {
             if (this.saveToLocalStorage()) {
                 console.log('[FileManager] Autosaved');
+                if (this.onAutoSave) this.onAutoSave({ source: 'interval', at: new Date() });
             }
         }, this.autoSaveInterval);
 
         // También guardar en cada modificación importante
-        this.fabricCanvas.canvas?.on('object:modified', () => {
-            this.saveToLocalStorage();
-        });
+        if (this.fabricCanvas.canvas && !this._onCanvasModified) {
+            this._onCanvasModified = () => {
+                if (!this.saveToLocalStorage()) return;
+                if (this.onAutoSave) this.onAutoSave({ source: 'event', at: new Date() });
+            };
+            this.fabricCanvas.canvas.on('object:modified', this._onCanvasModified);
+            this.fabricCanvas.canvas.on('object:added', this._onCanvasModified);
+            this.fabricCanvas.canvas.on('object:removed', this._onCanvasModified);
+        }
     }
 
     /**
@@ -172,5 +189,12 @@ export class FileManager {
             clearInterval(this._autoSaveTimer);
             this._autoSaveTimer = null;
         }
+        if (this.fabricCanvas?.canvas && this._onCanvasModified) {
+            this.fabricCanvas.canvas.off('object:modified', this._onCanvasModified);
+            this.fabricCanvas.canvas.off('object:added', this._onCanvasModified);
+            this.fabricCanvas.canvas.off('object:removed', this._onCanvasModified);
+        }
+        this._onCanvasModified = null;
     }
 }
+

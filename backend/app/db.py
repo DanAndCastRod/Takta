@@ -122,11 +122,72 @@ def set_engine(engine):
     _engine = engine
 
 
+def _sqlite_column_exists(engine, table_name: str, column_name: str) -> bool:
+    with engine.connect() as conn:
+        rows = conn.execute(text(f"PRAGMA table_info({table_name})")).fetchall()
+    return any(row[1] == column_name for row in rows)
+
+
+def _sqlite_add_column_if_missing(engine, table_name: str, column_name: str, ddl_type: str) -> None:
+    if _sqlite_column_exists(engine, table_name, column_name):
+        return
+    with engine.begin() as conn:
+        conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {ddl_type}"))
+    logger.info(f"[DB] SQLite migration applied: {table_name}.{column_name}")
+
+
+def _run_sqlite_migrations(engine) -> None:
+    """
+    Lightweight additive migrations for SQLite environments where create_all()
+    does not alter existing tables.
+    """
+    backend_name = engine.url.get_backend_name()
+    if backend_name != "sqlite":
+        return
+
+    _sqlite_add_column_if_missing(engine, "productreference", "uom", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "productreference", "packaging_uom", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "timestudy", "asset_id", "CHAR(32)")
+    _sqlite_add_column_if_missing(engine, "timestudy", "product_reference_id", "CHAR(32)")
+    _sqlite_add_column_if_missing(engine, "timestudy", "sampling_interval_seconds", "INTEGER")
+    _sqlite_add_column_if_missing(engine, "timestudy", "sampling_population_size", "INTEGER")
+    _sqlite_add_column_if_missing(engine, "formatinstance", "updated_at", "DATETIME")
+    _sqlite_add_column_if_missing(engine, "formatinstance", "source_context_json", "TEXT")
+    _sqlite_add_column_if_missing(engine, "nonconformity", "close_requested_at", "DATETIME")
+    _sqlite_add_column_if_missing(engine, "nonconformity", "close_requested_by", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "nonconformity", "approved_at", "DATETIME")
+    _sqlite_add_column_if_missing(engine, "nonconformity", "approved_by", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "nonconformity", "verified_at", "DATETIME")
+    _sqlite_add_column_if_missing(engine, "nonconformity", "verified_by", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "nonconformity", "rejected_at", "DATETIME")
+    _sqlite_add_column_if_missing(engine, "nonconformity", "rejected_by", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "nonconformity", "rejected_reason", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "capaaction", "close_requested_at", "DATETIME")
+    _sqlite_add_column_if_missing(engine, "capaaction", "close_requested_by", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "capaaction", "approved_at", "DATETIME")
+    _sqlite_add_column_if_missing(engine, "capaaction", "approved_by", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "capaaction", "verified_at", "DATETIME")
+    _sqlite_add_column_if_missing(engine, "capaaction", "verified_by", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "capaaction", "rejected_at", "DATETIME")
+    _sqlite_add_column_if_missing(engine, "capaaction", "rejected_by", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "capaaction", "rejected_reason", "VARCHAR")
+    _sqlite_add_column_if_missing(engine, "improvementaction", "tenant_code", "VARCHAR DEFAULT 'default'")
+    _sqlite_add_column_if_missing(engine, "continuousimprovementkpidefinition", "tenant_code", "VARCHAR DEFAULT 'default'")
+    _sqlite_add_column_if_missing(engine, "continuousimprovementkpimeasurement", "tenant_code", "VARCHAR DEFAULT 'default'")
+    _sqlite_add_column_if_missing(engine, "weightsamplingspec", "tenant_code", "VARCHAR DEFAULT 'default'")
+    _sqlite_add_column_if_missing(engine, "nonconformity", "tenant_code", "VARCHAR DEFAULT 'default'")
+    _sqlite_add_column_if_missing(engine, "capaaction", "tenant_code", "VARCHAR DEFAULT 'default'")
+    _sqlite_add_column_if_missing(engine, "vsmcanvas", "tenant_code", "VARCHAR DEFAULT 'default'")
+    _sqlite_add_column_if_missing(engine, "plantlayout", "tenant_code", "VARCHAR DEFAULT 'default'")
+    _sqlite_add_column_if_missing(engine, "engineeringmeeting", "tenant_code", "VARCHAR DEFAULT 'default'")
+
+
 def init_db():
     """Create all SQLModel tables if they don't exist."""
     engine = get_engine()
     try:
         SQLModel.metadata.create_all(engine)
+        _run_sqlite_migrations(engine)
         logger.info("[DB] Tables created/verified.")
     except Exception as e:
         logger.error(f"[DB] Error creating tables: {e}")

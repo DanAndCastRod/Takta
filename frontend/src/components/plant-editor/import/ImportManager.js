@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ImportManager - Fachada para manejar la importación de diferentes formatos de archivo.
  * 
  * Formatos soportados:
@@ -165,3 +165,4 @@ export class ImportManager {
 
 // Singleton para uso global
 export const importManager = new ImportManager();
+

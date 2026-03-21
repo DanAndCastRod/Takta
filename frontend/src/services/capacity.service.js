@@ -1,15 +1,12 @@
+import ApiClient from './api.client.js';
+
 export const capacityService = {
     async getAssetCapacity(assetId) {
-        try {
-            const response = await fetch(`http://localhost:9003/api/engineering/capacity/${assetId}`);
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Failed to fetch capacity');
-            }
-            return await response.json();
-        } catch (error) {
-            console.error('Capacity Service Error:', error);
-            throw error;
-        }
+        return ApiClient.get(`/engineering/capacity/${assetId}`);
+    },
+
+    async getStaffing(assetId, demand, hoursPerShift = 8, shiftsPerDay = 1) {
+        const query = `demand=${encodeURIComponent(demand)}&hours_per_shift=${encodeURIComponent(hoursPerShift)}&shifts_per_day=${encodeURIComponent(shiftsPerDay)}`;
+        return ApiClient.get(`/engineering/capacity/${assetId}/staffing?${query}`);
     }
 };

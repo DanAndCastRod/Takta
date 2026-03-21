@@ -14,6 +14,37 @@ export class FabricCanvas {
         };
     }
 
+    isEphemeralObject(target) {
+        if (!target) return false;
+        if (target.excludeFromExport) return true;
+        return target.objectType === 'heatmapOverlay'
+            || target.objectType === 'signalOverlayBadge';
+    }
+
+    toSerializableJSON(extraProps = []) {
+        if (!this.canvas) return {};
+        const json = this.canvas.toJSON([
+            'layerId', 'assetId', 'zoneType', 'arrowId', 'objectType', 'flowData', 'data',
+            'customData', 'connectedArrows', 'fromObjectId', 'toObjectId',
+            ...extraProps,
+        ]);
+        if (Array.isArray(json.objects)) {
+            json.objects = json.objects.filter((obj) => !obj.excludeFromExport
+                && obj.objectType !== 'heatmapOverlay'
+                && obj.objectType !== 'signalOverlayBadge');
+        }
+        return json;
+    }
+
+    notifyHistoryChanged() {
+        if (typeof this.options.onHistoryChanged === 'function') {
+            this.options.onHistoryChanged({
+                canUndo: this.canUndo(),
+                canRedo: this.canRedo(),
+            });
+        }
+    }
+
     init() {
         if (this.canvas) return;
 
@@ -53,8 +84,9 @@ export class FabricCanvas {
         this._history = [];
         this._historyIndex = -1;
         this._maxHistory = 50;
+        this._isRestoringState = false;
 
-        document.addEventListener('keydown', (e) => {
+        this._boundKeydown = (e) => {
             // Don't intercept if user is typing in an input
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
@@ -139,22 +171,30 @@ export class FabricCanvas {
                 this.canvas.requestRenderAll();
                 e.preventDefault();
             }
-        });
+        };
+        document.addEventListener('keydown', this._boundKeydown);
 
         // Save state on object modifications for undo
-        this.canvas.on('object:modified', () => this.saveState());
-        this.canvas.on('object:added', () => this.saveState());
-        this.canvas.on('object:removed', () => this.saveState());
+        this.canvas.on('object:modified', (event) => this.saveState(event));
+        this.canvas.on('object:added', (event) => this.saveState(event));
+        this.canvas.on('object:removed', (event) => this.saveState(event));
+        this.saveState();
     }
 
-    saveState() {
+    saveState(event = null) {
+        if (this._isRestoringState) return;
+        const target = event?.target;
+        if (this.isEphemeralObject(target)) return;
+
         // Remove states after current index if we're in the middle of history
         if (this._historyIndex < this._history.length - 1) {
             this._history = this._history.slice(0, this._historyIndex + 1);
         }
 
-        const json = this.canvas.toJSON(['layerId', 'assetId', 'zoneType', 'arrowId', 'objectType', 'flowData']);
-        this._history.push(JSON.stringify(json));
+        const json = this.toSerializableJSON();
+        const serialized = JSON.stringify(json);
+        if (this._history[this._history.length - 1] === serialized) return;
+        this._history.push(serialized);
 
         // Limit history size
         if (this._history.length > this._maxHistory) {
@@ -162,14 +202,18 @@ export class FabricCanvas {
         } else {
             this._historyIndex++;
         }
+        this.notifyHistoryChanged();
     }
 
     undo() {
         if (this._historyIndex > 0) {
             this._historyIndex--;
             const json = JSON.parse(this._history[this._historyIndex]);
+            this._isRestoringState = true;
             this.canvas.loadFromJSON(json, () => {
+                this._isRestoringState = false;
                 this.canvas.renderAll();
+                this.notifyHistoryChanged();
             });
         }
     }
@@ -178,10 +222,76 @@ export class FabricCanvas {
         if (this._historyIndex < this._history.length - 1) {
             this._historyIndex++;
             const json = JSON.parse(this._history[this._historyIndex]);
+            this._isRestoringState = true;
             this.canvas.loadFromJSON(json, () => {
+                this._isRestoringState = false;
                 this.canvas.renderAll();
+                this.notifyHistoryChanged();
             });
         }
+    }
+
+    resetView() {
+        if (!this.canvas) return;
+        this.canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+        this.canvas.setZoom(1);
+        this.canvas.requestRenderAll();
+    }
+
+    fitToContent(padding = 48) {
+        if (!this.canvas) return;
+        const container = document.getElementById(this.containerId);
+        if (!container) return;
+
+        const exportableObjects = this.canvas.getObjects().filter((obj) => !this.isEphemeralObject(obj));
+        if (!exportableObjects.length) {
+            this.resetView();
+            return;
+        }
+
+        let minX = Number.POSITIVE_INFINITY;
+        let minY = Number.POSITIVE_INFINITY;
+        let maxX = Number.NEGATIVE_INFINITY;
+        let maxY = Number.NEGATIVE_INFINITY;
+
+        exportableObjects.forEach((obj) => {
+            const rect = obj.getBoundingRect?.(true, true);
+            if (!rect) return;
+            minX = Math.min(minX, rect.left);
+            minY = Math.min(minY, rect.top);
+            maxX = Math.max(maxX, rect.left + rect.width);
+            maxY = Math.max(maxY, rect.top + rect.height);
+        });
+
+        if (!Number.isFinite(minX) || !Number.isFinite(minY)
+            || !Number.isFinite(maxX) || !Number.isFinite(maxY)) {
+            this.resetView();
+            return;
+        }
+
+        const contentWidth = Math.max(1, maxX - minX);
+        const contentHeight = Math.max(1, maxY - minY);
+        const safePadding = Math.max(12, Number(padding) || 48);
+        const canvasWidth = Math.max(1, container.clientWidth);
+        const canvasHeight = Math.max(1, container.clientHeight);
+
+        const availableWidth = Math.max(1, canvasWidth - (safePadding * 2));
+        const availableHeight = Math.max(1, canvasHeight - (safePadding * 2));
+        const zoom = Math.max(0.05, Math.min(8, Math.min(availableWidth / contentWidth, availableHeight / contentHeight)));
+
+        const offsetX = ((canvasWidth - (contentWidth * zoom)) / 2) - (minX * zoom);
+        const offsetY = ((canvasHeight - (contentHeight * zoom)) / 2) - (minY * zoom);
+
+        this.canvas.setViewportTransform([zoom, 0, 0, zoom, offsetX, offsetY]);
+        this.canvas.requestRenderAll();
+    }
+
+    canUndo() {
+        return this._historyIndex > 0;
+    }
+
+    canRedo() {
+        return this._historyIndex >= 0 && this._historyIndex < (this._history.length - 1);
     }
 
     setupInteractions() {
@@ -254,10 +364,13 @@ export class FabricCanvas {
     }
 
     loadFromJSON(json) {
-        if (!this.canvas) return;
-        this.canvas.loadFromJSON(json, () => {
-            this.canvas.renderAll();
-            console.log('[FabricCanvas] JSON Loaded');
+        if (!this.canvas) return Promise.resolve();
+        return new Promise((resolve) => {
+            this.canvas.loadFromJSON(json, () => {
+                this.canvas.renderAll();
+                console.log('[FabricCanvas] JSON Loaded');
+                resolve();
+            });
         });
     }
 
@@ -346,7 +459,11 @@ export class FabricCanvas {
                     height: objData.height,
                     fill: objData.fill,
                     stroke: objData.stroke,
-                    strokeWidth: objData.strokeWidth
+                    strokeWidth: objData.strokeWidth,
+                    layerId: objData.layerId,
+                    assetId: objData.assetId,
+                    zoneType: objData.zoneType,
+                    data: objData.data
                 });
                 break;
 
@@ -358,7 +475,11 @@ export class FabricCanvas {
                     ry: objData.ry,
                     fill: objData.fill,
                     stroke: objData.stroke,
-                    strokeWidth: objData.strokeWidth
+                    strokeWidth: objData.strokeWidth,
+                    layerId: objData.layerId,
+                    assetId: objData.assetId,
+                    zoneType: objData.zoneType,
+                    data: objData.data
                 });
                 break;
 
@@ -369,7 +490,9 @@ export class FabricCanvas {
         if (fabricObj) {
             this.canvas.add(fabricObj);
             this.canvas.renderAll();
+            return fabricObj;
         }
+        return null;
     }
 
     /**
@@ -384,7 +507,11 @@ export class FabricCanvas {
                 left: objData.left,
                 top: objData.top,
                 scaleX: (objData.width || img.width) / img.width,
-                scaleY: (objData.height || img.height) / img.height
+                scaleY: (objData.height || img.height) / img.height,
+                layerId: objData.layerId,
+                assetId: objData.assetId,
+                zoneType: objData.zoneType,
+                data: objData.data
             });
 
             this.canvas.add(img);
@@ -397,7 +524,7 @@ export class FabricCanvas {
 
     toJSON() {
         if (!this.canvas) return {};
-        return this.canvas.toJSON();
+        return this.toSerializableJSON();
     }
 
     clear() {
@@ -405,6 +532,7 @@ export class FabricCanvas {
         this.canvas.clear();
         this.canvas.backgroundColor = this.options.backgroundColor;
         this.canvas.renderAll();
+        this.saveState();
     }
 
     getActiveObject() {
@@ -421,6 +549,10 @@ export class FabricCanvas {
     }
 
     destroy() {
+        if (this._boundKeydown) {
+            document.removeEventListener('keydown', this._boundKeydown);
+            this._boundKeydown = null;
+        }
         if (this.canvas) {
             this.canvas.dispose();
             this.canvas = null;
@@ -430,3 +562,4 @@ export class FabricCanvas {
         }
     }
 }
+

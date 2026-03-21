@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DrawioParser - Parsea archivos .drawio (XML mxGraph) y extrae imágenes/geometrías.
  * 
  * Estrategia:
@@ -305,3 +305,4 @@ export class DrawioParser {
         }
     }
 }
+
