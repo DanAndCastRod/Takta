@@ -1,4 +1,4 @@
-function esc(value = '') {
+﻿function esc(value = '') {
     return String(value)
         .replaceAll('&', '&amp;')
         .replaceAll('<', '&lt;')
@@ -303,7 +303,7 @@ async function LandingPage(options = {}) {
         : { route: '#/login', label: 'Iniciar sesion' };
 
     container.innerHTML = `
-        <div class="relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
+        <div class="tk-on-dark relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
             <div class="absolute inset-0 opacity-30 pointer-events-none" style="background-image: radial-gradient(circle at 20% 20%, rgba(0,184,212,0.26), transparent 42%), radial-gradient(circle at 80% 10%, rgba(56,189,248,0.18), transparent 35%);"></div>
             <div class="relative max-w-7xl mx-auto px-4 md:px-8 py-10 md:py-14">
                 <div class="flex flex-wrap items-center gap-3 mb-6">
@@ -312,7 +312,7 @@ async function LandingPage(options = {}) {
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
                     <div class="lg:col-span-7">
-                        <h1 class="text-3xl md:text-5xl font-semibold leading-tight tracking-tight">Takta integra captura, diagnostico y centralizacion del proceso en una sola plataforma.</h1>
+                        <h1 class="text-3xl text-white md:text-5xl font-semibold leading-tight tracking-tight">Takta integra captura, diagnostico y centralizacion del proceso en una sola plataforma.</h1>
                         <p class="mt-4 text-sm md:text-base text-slate-200 max-w-2xl">Desde activos y estandares hasta SPC/CAPA, actas y simulacion de flujo. Todo conectado por contexto canonico para ejecutar mejora continua con evidencia real.</p>
                         <div class="mt-6 flex flex-wrap gap-3">
                             <a href="${primaryCta.route}" class="tk-btn-primary px-5 py-2.5 text-sm shadow-lg shadow-cyan-900/25">${primaryCta.label}</a>
@@ -367,21 +367,36 @@ async function LandingPage(options = {}) {
                 <h2 class="text-2xl md:text-3xl font-semibold text-slate-900">Guia de usuario completa</h2>
                 <p class="text-sm text-slate-600 mt-2">Operacion estandar de Takta por modulo y rol. Usa el filtro para ir directo al punto requerido.</p>
             </div>
-            <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
-                <aside class="xl:col-span-4">
-                    <div class="tk-card p-4 sticky top-24">
-                        <label for="landing-doc-search" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Buscar en guia</label>
-                        <input id="landing-doc-search" class="tk-input px-3 py-2 text-sm" placeholder="Ej: CAPA, estandares, tenant, PWA">
-                        <div id="landing-doc-nav" class="mt-4 space-y-1 max-h-[55vh] overflow-auto pr-1">
-                            ${USER_GUIDE.map((section) => `
-                                <button type="button" data-guide-jump="${section.id}" class="w-full text-left px-2.5 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100 transition-colors">
-                                    ${esc(section.title)}
-                                </button>
-                            `).join('')}
+            <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-[300px,minmax(0,1fr)]">
+                <aside class="space-y-4">
+                    <div class="tk-card p-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Buscar en guia</p>
+                                <h3 class="mt-1 text-base font-semibold text-slate-900">Navegacion rapida</h3>
+                            </div>
+                            <span class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500">${USER_GUIDE.length} bloques</span>
                         </div>
+                        <p class="mt-2 text-sm leading-6 text-slate-500">Filtra el contenido y abre el indice solo cuando necesites saltar a una seccion puntual.</p>
+                        <label for="landing-doc-search" class="mt-4 block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Termino</label>
+                        <input id="landing-doc-search" class="tk-input mt-2 px-3 py-2 text-sm" placeholder="CAPA, estandares, tenant, PWA">
+                    </div>
+                    <div class="tk-card p-4">
+                        <details>
+                            <summary class="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                Indice de la guia
+                            </summary>
+                            <div id="landing-doc-nav" class="mt-3 space-y-2 max-h-72 overflow-y-auto pr-1">
+                                ${USER_GUIDE.map((section) => `
+                                    <button type="button" data-guide-jump="${section.id}" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-[13px] leading-5 text-slate-700 hover:border-brand-orange/30 hover:bg-orange-50/40 transition-colors">
+                                        ${esc(section.title)}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </details>
                     </div>
                 </aside>
-                <div id="landing-doc-sections" class="xl:col-span-8 space-y-4">
+                <div id="landing-doc-sections" class="min-w-0 space-y-4">
                     ${USER_GUIDE.map((section) => renderGuideSection(section)).join('')}
                 </div>
             </div>

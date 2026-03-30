@@ -1,4 +1,4 @@
-import platformService from './platform.service.js';
+﻿import platformService from './platform.service.js';
 
 const STORAGE_KEY = 'takta.runtime.v2';
 const TENANT_KEY = 'takta.tenant_code';
@@ -40,6 +40,63 @@ const API_MENU_ROUTE_MAP = [
     { pattern: /^\/api\/plant-layouts(\/|$)/i, route: '#/plant-editor' },
     { pattern: /^\/api\/platform(\/|$)/i, route: '#/settings' },
 ];
+
+const DEFAULT_MENU_LABELS = {
+    dashboard: 'Dashboard',
+    landing: 'Vista consolidada',
+    docs: 'Docs',
+    assets: 'Árbol de activos',
+    engineering: 'Ingeniería',
+    timing: 'Cronómetro',
+    capacity: 'Capacidad',
+    execution: 'Ejecución',
+    mobile: 'Piso móvil',
+    weight: 'Muestreo de peso',
+    excellence: 'Excelencia',
+    meetings: 'Actas IP',
+    editor: 'Editor docs',
+    documents: 'Documentos',
+    diagram: 'Diagram Studio',
+    settings: 'Configuración',
+};
+
+const DEFAULT_GROUP_TITLES = {
+    'dashboard|landing|docs': 'Inicio',
+    'assets|engineering|timing|capacity': 'Ingeniería',
+    'execution|mobile': 'Operación',
+    'weight|excellence|meetings': 'Calidad y Mejora',
+    'editor|documents|diagram': 'Documentación y Diseño',
+};
+
+function hasSuspiciousMojibake(value = '') {
+    return /[ÃÂâ�\u0081\u008d\u008f\u0090\u009d]/.test(String(value ?? ''));
+}
+
+function repairMojibakeText(value = '') {
+    const text = String(value ?? '');
+    if (!hasSuspiciousMojibake(text)) return text.replace(/\u00ad/g, '');
+    try {
+        const bytes = Uint8Array.from(Array.from(text), (char) => char.charCodeAt(0) & 0xff);
+        return (new TextDecoder('utf-8').decode(bytes) || text).replace(/\u00ad/g, '');
+    } catch {
+        return text.replace(/\u00ad/g, '');
+    }
+}
+
+function sanitizeRuntimeValue(value) {
+    if (Array.isArray(value)) {
+        return value.map((item) => sanitizeRuntimeValue(item));
+    }
+    if (value && typeof value === 'object') {
+        return Object.fromEntries(
+            Object.entries(value).map(([key, item]) => [repairMojibakeText(key), sanitizeRuntimeValue(item)]),
+        );
+    }
+    if (typeof value === 'string') {
+        return repairMojibakeText(value);
+    }
+    return value;
+}
 
 function mergeQuery(route = '#/', query = '') {
     if (!query) return route;
@@ -103,7 +160,7 @@ function readRuntime() {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return { ...DEFAULT_RUNTIME };
-        const parsed = JSON.parse(raw);
+        const parsed = sanitizeRuntimeValue(JSON.parse(raw));
         return {
             ...DEFAULT_RUNTIME,
             ...parsed,
@@ -117,32 +174,41 @@ function readRuntime() {
 }
 
 function writeRuntime(runtime) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(runtime));
-    const tenantCode = runtime?.tenant?.code || 'default';
+    const sanitizedRuntime = sanitizeRuntimeValue(runtime);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitizedRuntime));
+    const tenantCode = sanitizedRuntime?.tenant?.code || 'default';
     localStorage.setItem(TENANT_KEY, tenantCode);
-    window.dispatchEvent(new CustomEvent('tenant:runtime', { detail: runtime }));
+    window.dispatchEvent(new CustomEvent('tenant:runtime', { detail: sanitizedRuntime }));
 }
 
 function applyTheme(theme) {
     if (!theme || typeof theme !== 'object') return;
     const root = document.documentElement;
     const colors = theme.colors || {};
-    if (colors.brand_orange) root.style.setProperty('--brand-orange', String(colors.brand_orange));
-    if (colors.brand_orange_dark) root.style.setProperty('--brand-orange-dark', String(colors.brand_orange_dark));
+    if (colors.brand_orange) {
+        root.style.setProperty('--brand-orange', String(colors.brand_orange));
+        root.style.setProperty('--color-brand-orange', String(colors.brand_orange));
+    }
+    if (colors.brand_orange_dark) {
+        root.style.setProperty('--brand-orange-dark', String(colors.brand_orange_dark));
+        root.style.setProperty('--color-brand-orange-dark', String(colors.brand_orange_dark));
+    }
     if (colors.surface) root.style.setProperty('--surface', String(colors.surface));
     if (colors.surface_soft) root.style.setProperty('--surface-soft', String(colors.surface_soft));
+    if (colors.surface_muted) root.style.setProperty('--surface-muted', String(colors.surface_muted));
+    if (colors.border_subtle) root.style.setProperty('--border-subtle', String(colors.border_subtle));
     if (colors.text_primary) root.style.setProperty('--text-primary', String(colors.text_primary));
     if (colors.text_secondary) root.style.setProperty('--text-secondary', String(colors.text_secondary));
+    if (colors.text_muted) root.style.setProperty('--text-muted', String(colors.text_muted));
     if (theme.typography?.font_family) root.style.setProperty('--font-family-runtime', String(theme.typography.font_family));
-    if (theme.custom_css) {
-        let style = document.getElementById('takta-tenant-custom-css');
-        if (!style) {
-            style = document.createElement('style');
-            style.id = 'takta-tenant-custom-css';
-            document.head.appendChild(style);
-        }
-        style.textContent = String(theme.custom_css);
+
+    let style = document.getElementById('takta-tenant-custom-css');
+    if (!style) {
+        style = document.createElement('style');
+        style.id = 'takta-tenant-custom-css';
+        document.head.appendChild(style);
     }
+    style.textContent = theme.custom_css ? String(theme.custom_css) : '';
 }
 
 function normalizeMenuConfig(groups = []) {
@@ -152,6 +218,11 @@ function normalizeMenuConfig(groups = []) {
             const label = String(item?.label || '').toLowerCase();
             const id = String(item?.id || '').toLowerCase();
             let path = normalizeRuntimeMenuPath(item?.path || '#/');
+            let nextLabel = repairMojibakeText(item?.label || '');
+
+            if (DEFAULT_MENU_LABELS[id] && hasSuspiciousMojibake(nextLabel)) {
+                nextLabel = DEFAULT_MENU_LABELS[id];
+            }
 
             // Defensive fix for tenant configs where "Vista consolidada" points to dashboard.
             if ((label.includes('consolid') || id.includes('consolid') || label.includes('landing')) && path === '#/') {
@@ -164,9 +235,17 @@ function normalizeMenuConfig(groups = []) {
             }
 
             if (path === '#/') seenRootPath.push(true);
-            return { ...item, path };
+            return { ...item, label: nextLabel, path };
         });
-        return { ...group, items };
+        const groupKey = items
+            .map((item) => String(item?.id || '').toLowerCase())
+            .filter(Boolean)
+            .join('|');
+        let title = repairMojibakeText(group?.title || '');
+        if (DEFAULT_GROUP_TITLES[groupKey] && hasSuspiciousMojibake(title)) {
+            title = DEFAULT_GROUP_TITLES[groupKey];
+        }
+        return { ...group, title, items };
     });
 }
 

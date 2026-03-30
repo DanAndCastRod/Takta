@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 /* Takta Custom Styles will go here */
 :root {
@@ -47,6 +47,15 @@ h6 {
   color: var(--text-primary);
 }
 
+.tk-on-dark h1,
+.tk-on-dark h2,
+.tk-on-dark h3,
+.tk-on-dark h4,
+.tk-on-dark h5,
+.tk-on-dark h6 {
+  color: #fff;
+}
+
 code,
 pre,
 .tk-metric {
@@ -70,7 +79,7 @@ pre,
 }
 
 .bg-brand-orange\/10 {
-  background-color: rgb(249 115 22 / 0.1);
+  background-color: color-mix(in srgb, var(--brand-orange) 12%, transparent);
 }
 
 .focus\:border-brand-orange:focus {
@@ -78,7 +87,7 @@ pre,
 }
 
 .focus\:ring-brand-orange\/40:focus {
-  --tw-ring-color: rgb(249 115 22 / 0.4);
+  --tw-ring-color: color-mix(in srgb, var(--brand-orange) 40%, transparent);
 }
 
 .tk-btn-primary {
@@ -136,35 +145,103 @@ pre,
 
 /* URiT palette bridge for legacy orange utility classes */
 .bg-orange-50 {
-  background-color: #ecfeff !important;
+  background-color: color-mix(in srgb, var(--brand-orange) 8%, white) !important;
 }
 
 .bg-orange-100 {
-  background-color: #cffafe !important;
+  background-color: color-mix(in srgb, var(--brand-orange) 14%, white) !important;
 }
 
 .bg-orange-200 {
-  background-color: #a5f3fc !important;
+  background-color: color-mix(in srgb, var(--brand-orange) 22%, white) !important;
+}
+
+.bg-orange-500 {
+  background-color: var(--brand-orange) !important;
+}
+
+.bg-orange-50\/40 {
+  background-color: color-mix(in srgb, var(--brand-orange) 10%, transparent) !important;
+}
+
+.bg-orange-50\/60 {
+  background-color: color-mix(in srgb, var(--brand-orange) 14%, white) !important;
+}
+
+.bg-orange-50\/70 {
+  background-color: color-mix(in srgb, var(--brand-orange) 18%, white) !important;
 }
 
 .text-orange-700 {
-  color: #0e7490 !important;
+  color: var(--brand-orange-dark) !important;
 }
 
 .text-orange-600 {
-  color: #0891b2 !important;
+  color: var(--brand-orange) !important;
+}
+
+.text-orange-400 {
+  color: color-mix(in srgb, var(--brand-orange) 74%, white) !important;
+}
+
+.text-orange-800 {
+  color: color-mix(in srgb, var(--brand-orange-dark) 86%, black) !important;
 }
 
 .border-orange-200 {
-  border-color: rgba(0, 184, 212, 0.3) !important;
+  border-color: color-mix(in srgb, var(--brand-orange) 28%, white) !important;
+}
+
+.border-orange-300 {
+  border-color: color-mix(in srgb, var(--brand-orange) 38%, white) !important;
+}
+
+.border-orange-400 {
+  border-color: color-mix(in srgb, var(--brand-orange) 52%, white) !important;
+}
+
+.ring-orange-200 {
+  --tw-ring-color: color-mix(in srgb, var(--brand-orange) 28%, white) !important;
 }
 
 .hover\:bg-orange-100:hover {
-  background-color: #cffafe !important;
+  background-color: color-mix(in srgb, var(--brand-orange) 16%, white) !important;
 }
 
 .hover\:bg-orange-200:hover {
-  background-color: #a5f3fc !important;
+  background-color: color-mix(in srgb, var(--brand-orange) 24%, white) !important;
+}
+
+.hover\:bg-orange-600:hover {
+  background-color: var(--brand-orange-dark) !important;
+}
+
+.hover\:text-orange-800:hover {
+  color: color-mix(in srgb, var(--brand-orange-dark) 86%, black) !important;
+}
+
+.focus\:border-orange-400:focus {
+  border-color: var(--brand-orange) !important;
+}
+
+.focus\:ring-orange-400\/40:focus {
+  --tw-ring-color: color-mix(in srgb, var(--brand-orange) 40%, transparent) !important;
+}
+
+.to-orange-600 {
+  --tw-gradient-to: var(--brand-orange-dark) var(--tw-gradient-to-position) !important;
+}
+
+.tk-brand-logo {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  object-fit: contain;
+}
+
+.tk-brand-logo--lg {
+  width: 3.5rem;
+  height: 3.5rem;
 }
 
 .tk-input,

@@ -10,9 +10,9 @@ from backend.app.models import (
 )
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# -------------------------------------------------------------
 # Activities
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# -------------------------------------------------------------
 
 def test_create_activity(client, auth_headers):
     """Create a new activity with auth."""
@@ -38,7 +38,7 @@ def test_list_activities(client, auth_headers):
     )
     client.post(
         "/api/engineering/activities/",
-        json={"name": "InspecciÃ³n Visual", "type": "Inspection", "is_value_added": False},
+        json={"name": "Inspección Visual", "type": "Inspection", "is_value_added": False},
         headers=auth_headers
     )
     response = client.get("/api/engineering/activities/", headers=auth_headers)
@@ -65,9 +65,9 @@ def test_filter_activities_by_type(client, auth_headers):
     assert all(a["type"] == "Delay" for a in data)
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# -------------------------------------------------------------
 # References (SKU)
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# -------------------------------------------------------------
 
 def test_create_reference(client, auth_headers):
     """Create a product reference."""
@@ -135,9 +135,9 @@ def test_search_references(client, auth_headers):
     assert any(r["code"] == "SEARCH-XYZ" for r in resp2.json())
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# -------------------------------------------------------------
 # Standards (Triad)
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# -------------------------------------------------------------
 
 def _create_test_data(client, auth_headers):
     """Helper: create an asset, activity, and reference for standard tests."""
@@ -262,24 +262,24 @@ def test_create_standard_unauthorized(client):
     assert response.status_code == 401
 
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# Time Studies (Sprint 6 â€” Chronometer)
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# -------------------------------------------------------------
+# Time Studies (Sprint 6 - Chronometer)
+# -------------------------------------------------------------
 
 def _create_study_with_elements(client, auth_headers):
     """Helper: create a time study with 3 elements."""
     resp = client.post(
         "/api/engineering/studies/",
         json={
-            "name": "Estudio LÃ­nea Sellado",
-            "analyst_name": "Ing. PÃ©rez",
+            "name": "Estudio Línea Sellado",
+            "analyst_name": "Ing. Pérez",
             "study_type": "continuous",
             "rating_factor": 1.1,
             "supplements_pct": 0.15,
             "elements": [
                 {"name": "Carga MP", "type": "operation", "is_cyclic": True, "order": 1},
                 {"name": "Sellado", "type": "operation", "is_cyclic": True, "order": 2},
-                {"name": "InspecciÃ³n", "type": "inspection", "is_cyclic": True, "order": 3},
+                {"name": "Inspección", "type": "inspection", "is_cyclic": True, "order": 3},
             ]
         },
         headers=auth_headers
@@ -338,7 +338,7 @@ def test_create_study_with_elements(client, auth_headers):
     resp = _create_study_with_elements(client, auth_headers)
     assert resp.status_code == 200
     data = resp.json()
-    assert data["name"] == "Estudio LÃ­nea Sellado"
+    assert data["name"] == "Estudio Línea Sellado"
     assert data["elements_count"] == 3
     assert data["status"] == "draft"
 
@@ -350,7 +350,7 @@ def test_list_studies(client, auth_headers):
     assert resp.status_code == 200
     studies = resp.json()
     assert len(studies) >= 1
-    assert studies[0]["analyst_name"] == "Ing. PÃ©rez"
+    assert studies[0]["analyst_name"] == "Ing. Pérez"
 
 
 def test_get_study_detail(client, auth_headers):
@@ -427,7 +427,7 @@ def test_record_lap_without_session_fails(client, auth_headers):
 
 
 def test_calculate_results(client, auth_headers):
-    """Full flow: create study â†’ session â†’ laps â†’ calculate TN/TE."""
+    """Full flow: create study -> session -> laps -> calculate TN/TE."""
     create_resp = _create_study_with_elements(client, auth_headers)
     study_id = create_resp.json()["id"]
 

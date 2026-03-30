@@ -1,0 +1,1070 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Capacitacion Takta</title>
+    <style>
+        :root {
+            --bg: #07111d;
+            --panel: rgba(10, 18, 30, 0.84);
+            --card: rgba(255, 255, 255, 0.1);
+            --line: rgba(255, 255, 255, 0.14);
+            --text: #f6f8fb;
+            --muted: #bfd0e3;
+            --accent: #00b8d4;
+            --accent-soft: rgba(0, 184, 212, 0.16);
+            --ok: #34d399;
+            --warn: #f59e0b;
+            --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+            --radius-lg: 26px;
+            --title-font: "Rockwell", "Palatino Linotype", Georgia, serif;
+            --body-font: "Trebuchet MS", "Segoe UI", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+            background:
+                radial-gradient(circle at top left, rgba(0, 184, 212, 0.16), transparent 32%),
+                radial-gradient(circle at top right, rgba(245, 158, 11, 0.15), transparent 28%),
+                linear-gradient(135deg, #050c16 0%, #0b1523 52%, #132336 100%);
+            color: var(--text);
+            font-family: var(--body-font);
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        .deck {
+            min-height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .topbar,
+        .footerbar {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 18px 28px;
+        }
+
+        .footerbar {
+            padding-top: 12px;
+            padding-bottom: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-mark {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: linear-gradient(160deg, rgba(0, 184, 212, 0.92), rgba(8, 145, 178, 0.92));
+            display: grid;
+            place-items: center;
+            box-shadow: 0 16px 40px rgba(0, 184, 212, 0.24);
+            overflow: hidden;
+        }
+
+        .brand-mark img {
+            width: 78%;
+            height: 78%;
+            object-fit: contain;
+        }
+
+        .brand p,
+        .brand h1 {
+            margin: 0;
+        }
+
+        .brand p {
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .brand h1 {
+            font-size: 22px;
+            font-family: var(--title-font);
+            color: #fff;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .ghost,
+        .primary {
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 10px 16px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .primary {
+            background: linear-gradient(135deg, rgba(0, 184, 212, 0.94), rgba(12, 166, 190, 0.94));
+            border-color: transparent;
+            color: #041019;
+        }
+
+        .progress-shell {
+            width: min(240px, 38vw);
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent), #73e7f6);
+            transition: width 0.24s ease;
+        }
+
+        .viewport {
+            position: relative;
+            min-height: 0;
+            padding: 8px 24px 18px;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0 24px 18px;
+            display: none;
+            padding: 18px;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        .slide-shell {
+            height: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 32px;
+            padding: clamp(24px, 3vw, 42px);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04)), rgba(7, 14, 24, 0.8);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+            overflow: auto;
+        }
+
+        .slide-kicker {
+            margin: 0 0 10px;
+            color: #8ce8f4;
+            font-size: 12px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .slide-title {
+            margin: 0;
+            max-width: 14ch;
+            color: #fff;
+            font-size: clamp(2rem, 4.5vw, 4.8rem);
+            line-height: 0.94;
+            letter-spacing: -0.04em;
+            font-family: var(--title-font);
+        }
+
+        .slide-subtitle {
+            margin: 18px 0 0;
+            max-width: 70ch;
+            color: var(--muted);
+            font-size: clamp(1rem, 1.4vw, 1.18rem);
+            line-height: 1.65;
+        }
+
+        .hero-grid,
+        .two-col,
+        .three-col,
+        .module-grid,
+        .journey,
+        .list,
+        .steps,
+        .pill-row {
+            display: grid;
+            gap: 20px;
+        }
+
+        .hero-grid {
+            grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+            align-items: end;
+        }
+
+        .two-col {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            margin-top: 28px;
+        }
+
+        .three-col {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-top: 24px;
+        }
+
+        .module-grid {
+            margin-top: 26px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .journey {
+            margin-top: 26px;
+            gap: 14px;
+        }
+
+        .list,
+        .steps {
+            margin: 16px 0 0;
+            padding: 0;
+            list-style: none;
+            gap: 12px;
+        }
+
+        .pill-row {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .panel,
+        .metric,
+        .note,
+        .step,
+        .tile {
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--line);
+            background: var(--card);
+        }
+
+        .panel,
+        .note,
+        .tile {
+            padding: 20px 22px;
+        }
+
+        .metric {
+            padding: 18px 18px 20px;
+        }
+
+        .step {
+            padding: 18px 20px;
+            display: grid;
+            grid-template-columns: 44px minmax(0, 1fr);
+            gap: 16px;
+        }
+
+        .eyebrow {
+            color: #8ce8f4;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        .metric .value {
+            display: block;
+            margin-top: 10px;
+            font-size: clamp(1.9rem, 2.8vw, 3rem);
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .tile h3,
+        .panel h3,
+        .note h3,
+        .step h3 {
+            margin: 12px 0 0;
+            color: #fff;
+            font-size: 1.1rem;
+            font-family: var(--title-font);
+        }
+
+        .step h3 {
+            margin-top: 0;
+            font-size: 1.05rem;
+        }
+
+        .tile p,
+        .panel p,
+        .note p,
+        .metric p,
+        .step p {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .list li,
+        .steps li {
+            display: flex;
+            gap: 12px;
+            color: var(--text);
+            line-height: 1.55;
+        }
+
+        .bullet,
+        .index {
+            flex: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            font-size: 12px;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+
+        .bullet {
+            background: rgba(52, 211, 153, 0.16);
+            color: #9df5ca;
+        }
+
+        .index {
+            background: var(--accent-soft);
+            color: #94f4ff;
+        }
+
+        .tag,
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #eaf9fb;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .pill {
+            font-size: 13px;
+            letter-spacing: 0;
+            text-transform: none;
+            font-weight: 700;
+        }
+
+        .accent-line {
+            width: 88px;
+            height: 5px;
+            border-radius: 999px;
+            margin-top: 20px;
+            background: linear-gradient(90deg, var(--accent), #79ebf8);
+        }
+
+        .thumbnails {
+            display: flex;
+            gap: 8px;
+            overflow: auto;
+            padding-bottom: 2px;
+            max-width: calc(100vw - 280px);
+        }
+
+        .thumb {
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--muted);
+            border-radius: 14px;
+            min-width: 110px;
+            max-width: 150px;
+            padding: 10px 12px;
+            cursor: pointer;
+            font: inherit;
+            text-align: left;
+        }
+
+        .thumb strong {
+            display: block;
+            color: #fff;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .thumb span {
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .thumb.active {
+            border-color: rgba(0, 184, 212, 0.72);
+            background: rgba(0, 184, 212, 0.14);
+            color: #fff;
+        }
+
+        .counter,
+        .keyboard {
+            color: var(--muted);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .kbd {
+            display: inline-grid;
+            place-items: center;
+            min-width: 28px;
+            height: 28px;
+            padding: 0 8px;
+            border-radius: 9px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            font-weight: 800;
+            margin: 0 4px;
+        }
+
+        .highlight {
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .warning {
+            color: #ffd18a;
+        }
+
+        .success {
+            color: #a6f0cb;
+        }
+
+        @media (max-width: 1100px) {
+            body {
+                overflow: auto;
+            }
+
+            .viewport {
+                padding: 8px 14px 14px;
+            }
+
+            .slide {
+                position: relative;
+                inset: auto;
+                min-height: auto;
+                padding: 0 0 14px;
+            }
+
+            .slide:not(.active) {
+                display: none;
+            }
+
+            .hero-grid,
+            .two-col,
+            .three-col,
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footerbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .thumbnails {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="deck">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark">
+                    <img src="/icons/icon-192.png" alt="Takta">
+                </div>
+                <div>
+                    <p>Capacitacion</p>
+                    <h1>Uso de Takta</h1>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="progress-shell" aria-hidden="true">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <button type="button" class="ghost" id="prev-btn">Anterior</button>
+                <button type="button" class="primary" id="next-btn">Siguiente</button>
+            </div>
+        </header>
+
+        <main class="viewport">
+            <section class="slide active" data-title="Portada">
+                <div class="slide-shell">
+                    <div class="hero-grid">
+                        <div>
+                            <p class="slide-kicker">Takta · ecosistema operativo</p>
+                            <h2 class="slide-title">Capacitacion de uso para operar, estandarizar y cerrar brechas.</h2>
+                            <div class="accent-line"></div>
+                            <p class="slide-subtitle">Esta presentacion sirve para una sesion de induccion o entrenamiento funcional. Recorre el flujo real de Takta, desde acceso y contexto hasta ejecucion, calidad, mejora, actas, documentos y configuracion.</p>
+                            <div class="pill-row">
+                                <span class="pill">Duracion sugerida: 45-60 min</span>
+                                <span class="pill">Formato: demo + practica</span>
+                                <span class="pill">Audiencia: operacion, ingenieria, calidad y admins</span>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <p class="eyebrow">Objetivo de la sesion</p>
+                            <h3>Que el equipo entienda como entrar, trabajar con contexto y usar cada modulo sin romper la trazabilidad.</h3>
+                            <ul class="list">
+                                <li><span class="bullet">1</span><span>Reconocer la logica integral de Takta y sus entidades principales.</span></li>
+                                <li><span class="bullet">2</span><span>Aprender el recorrido recomendado por tipo de tarea.</span></li>
+                                <li><span class="bullet">3</span><span>Evitar errores comunes de captura, contexto y seguimiento.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="three-col">
+                        <div class="metric">
+                            <p class="eyebrow">Cobertura</p>
+                            <span class="value">13+</span>
+                            <p>modulos y pantallas clave incluidas en la formacion.</p>
+                        </div>
+                        <div class="metric">
+                            <p class="eyebrow">Pilares</p>
+                            <span class="value">3</span>
+                            <p>captura operativa, diagnostico integrado y decision accionable.</p>
+                        </div>
+                        <div class="metric">
+                            <p class="eyebrow">Clave</p>
+                            <span class="value">1</span>
+                            <p>trabajar siempre con <span class="highlight">contexto correcto</span>.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide" data-title="Agenda">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Agenda</p>
+                    <h2 class="slide-title">Como recorrer la capacitacion.</h2>
+                    <div class="two-col">
+                        <div class="panel">
+                            <p class="eyebrow">Bloques</p>
+                            <ol class="steps">
+                                <li><span class="index">1</span><span>Acceso, dashboard y principio de contexto.</span></li>
+                                <li><span class="index">2</span><span>Base tecnica: Activos, Ingenieria, Cronometro y Capacidad.</span></li>
+                                <li><span class="index">3</span><span>Operacion diaria: Ejecucion, movil y control de calidad.</span></li>
+                                <li><span class="index">4</span><span>Gobernanza: Excelencia, Actas, Documentos y Diagram Studio.</span></li>
+                                <li><span class="index">5</span><span>Configuracion, white label, offline y cierre.</span></li>
+                            </ol>
+                        </div>
+                        <div class="panel">
+                            <p class="eyebrow">Metodologia</p>
+                            <ul class="list">
+                                <li><span class="bullet">A</span><span>Explicar la logica del modulo antes de mostrar botones.</span></li>
+                                <li><span class="bullet">B</span><span>Demostrar un flujo completo de punta a punta, no clicks aislados.</span></li>
+                                <li><span class="bullet">C</span><span>Cerrar cada bloque con validacion: que se creo, que quedo trazado y que sigue.</span></li>
+                            </ul>
+                            <div class="note">
+                                <p class="eyebrow">Sugerencia</p>
+                                <p>Usa un tenant de entrenamiento y prepara de antemano un activo, un SKU, un estandar, una muestra y un acta para mostrar continuidad entre modulos.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide" data-title="Principio de Contexto">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Fundamento</p>
+                    <h2 class="slide-title">El contexto manda.</h2>
+                    <p class="slide-subtitle">Takta no funciona como una coleccion de pantallas aisladas. Los modulos tecnicos y operativos se alimentan del contexto activo: <span class="highlight">activo</span>, <span class="highlight">SKU</span> y <span class="highlight">estandar</span>.</p>
+                    <div class="journey">
+                        <div class="step">
+                            <div class="index">1</div>
+                            <div>
+                                <h3>Acceso y tenant correcto</h3>
+                                <p>Al entrar, valida tenant, branding y perfil. Si esto esta mal, lo demas se interpreta mal.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="index">2</div>
+                            <div>
+                                <h3>Activo correcto</h3>
+                                <p>Sin el activo correcto, Ingenieria, Documentos, Ejecucion, Layout y otras funciones pierden precision o no muestran datos.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="index">3</div>
+                            <div>
+                                <h3>SKU y estandar correctos</h3>
+                                <p>El estandar conecta tiempo, capacidad, ejecucion y calidad. Si no existe o no esta bien armado, el flujo queda incompleto.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="note">
+                        <p class="eyebrow">Mensaje para capacitacion</p>
+                        <p><span class="warning">Si un usuario dice “el modulo no muestra nada”</span>, primero revisa contexto y feature flags antes de asumir un bug.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide" data-title="Acceso y Dashboard">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Inicio</p>
+                    <h2 class="slide-title">Acceso, sesion y dashboard.</h2>
+                    <div class="module-grid">
+                        <article class="tile">
+                            <span class="tag">Login</span>
+                            <h3>Entrar a Takta</h3>
+                            <p>Validar tenant, marca, usuario y sesion. Si hay token vigente, la app debe reconstruir el runtime del tenant.</p>
+                        </article>
+                        <article class="tile">
+                            <span class="tag">Dashboard</span>
+                            <h3>Definir por donde arrancar</h3>
+                            <p>El dashboard sirve para elegir flujo y confirmar accesos rapidos, no para operar toda la plataforma desde ahi.</p>
+                        </article>
+                        <article class="tile">
+                            <span class="tag">Barra contextual</span>
+                            <h3>Navegacion util</h3>
+                            <p>Usar breadcrumbs, acciones relacionadas y chips de contexto para no perder continuidad entre modulos.</p>
+                        </article>
+                    </div>
+                    <div class="two-col">
+                        <div class="panel">
+                            <p class="eyebrow">Demostracion sugerida</p>
+                            <ul class="list">
+                                <li><span class="bullet">1</span><span>Entrar por `#/login` y mostrar branding del tenant.</span></li>
+                                <li><span class="bullet">2</span><span>Mostrar dashboard y explicar que modulo usar segun la tarea.</span></li>
+                                <li><span class="bullet">3</span><span>Mostrar `#/docs` como apoyo durante la adopcion.</span></li>
+                            </ul>
+                        </div>
+                        <div class="panel">
+                            <p class="eyebrow">Checks</p>
+                            <ul class="list">
+                                <li><span class="bullet">OK</span><span>Sesion autenticada.</span></li>
+                                <li><span class="bullet">OK</span><span>Menu y logo correctos por tenant.</span></li>
+                                <li><span class="bullet">OK</span><span>Usuario sabe donde pedir ayuda si no encuentra una funcion.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="slide" data-title="Base Tecnica">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Base tecnica</p>
+                    <h2 class="slide-title">Activos e Ingenieria construyen la base maestra.</h2>
+                    <div class="module-grid">
+                        <article class="tile">
+                            <span class="tag">Activos</span>
+                            <h3>Arbol operativo</h3>
+                            <p>Sede, planta, area, linea, maquina, puesto o componente. Si esto esta mal, la trazabilidad queda mal.</p>
+                        </article>
+                        <article class="tile">
+                            <span class="tag">Ingenieria</span>
+                            <h3>SKU, actividad y estandar</h3>
+                            <p>Define referencias, actividades permitidas y el estandar tecnico por activo.</p>
+                        </article>
+                        <article class="tile">
+                            <span class="tag">Importacion</span>
+                            <h3>Cargas masivas</h3>
+                            <p>Usar XLSX para maestros grandes; captura manual para cambios finos o validados en contexto.</p>
+                        </article>
+                    </div>
+                    <div class="journey">
+                        <div class="step">
+                            <div class="index">1</div>
+                            <div>
+                                <h3>Crear o validar activo</h3>
+                                <p>Mostrar como crear un activo raiz y un hijo, y como usarlo luego como contexto.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="index">2</div>
+                            <div>
+                                <h3>Crear referencia y actividad</h3>
+                                <p>Explicar que el usuario no debe saltar directo al estandar sin maestros consistentes.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="index">3</div>
+                            <div>
+                                <h3>Crear estandar</h3>
+                                <p>Conectar activo + actividad + SKU + tiempo/frecuencia. Este es el nodo que habilita el resto.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide" data-title="Tiempo y Capacidad">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Analisis</p>
+                    <h2 class="slide-title">Cronometro y Capacidad convierten la base en decision.</h2>
+                    <div class="two-col">
+                        <div class="panel">
+                            <p class="eyebrow">Cronometro</p>
+                            <h3>Medir antes de asumir</h3>
+                            <ul class="list">
+                                <li><span class="bullet">1</span><span>Crear estudio con activo, referencia y configuracion base.</span></li>
+                                <li><span class="bullet">2</span><span>Registrar elementos, sesiones y laps.</span></li>
+                                <li><span class="bullet">3</span><span>Cerrar, revisar resultados y aplicar al estandar si corresponde.</span></li>
+                            </ul>
+                        </div>
+                        <div class="panel">
+                            <p class="eyebrow">Capacidad</p>
+                            <h3>Calcular antes de asignar personal</h3>
+                            <ul class="list">
+                                <li><span class="bullet">1</span><span>Configurar precedencias y restricciones.</span></li>
+                                <li><span class="bullet">2</span><span>Ejecutar escenarios de capacidad y staffing.</span></li>
+                                <li><span class="bullet">3</span><span>Llevar una brecha real a mejora continua si requiere accion formal.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="note">
+                        <p class="eyebrow">Error comun</p>
+                        <p>No uses Capacidad como calculadora aislada. Si el estandar o el supuesto de turno estan flojos, el resultado parece preciso pero esta mal construido.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide" data-title="Operacion Diaria">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Operacion</p>
+                    <h2 class="slide-title">Ejecucion y movil capturan la realidad del turno.</h2>
+                    <div class="module-grid">
+                        <article class="tile">
+                            <span class="tag">Bitacora</span>
+                            <h3>Registrar eventos</h3>
+                            <p>Produccion, novedades y eventos que alimentan analisis posterior.</p>
+                        </article>
+                        <article class="tile">
+                            <span class="tag">Paros</span>
+                            <h3>Abrir y cerrar incidentes</h3>
+                            <p>El paro sin cierre o sin causa contamina indicadores y seguimiento.</p>
+                        </article>
+                        <article class="tile">
+                            <span class="tag">Personal</span>
+                            <h3>Skills y asignaciones</h3>
+                            <p>Permite planear turnos y entender limitaciones reales de operacion.</p>
+                        </article>
+                    </div>
+                    <div class="two-col">
+                        <div class="panel">
+                            <p class="eyebrow">Modo movil</p>
+                            <p>Explica que `#/mobile` reutiliza la logica de Ejecucion para captura en campo. Es util para entrada rapida, pero el detalle y analisis siguen viviendo en el modulo completo.</p>
+                        </div>
+                        <div class="panel">
+                            <p class="eyebrow">Mensaje clave</p>
+                            <p>Capacita al usuario para cerrar lo que abre. Un evento operativo incompleto es peor que uno no capturado porque induce decisiones equivocadas.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide" data-title="Calidad">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Calidad</p>
+                    <h2 class="slide-title">Muestreo de peso: de la muestra al cierre formal.</h2>
+                    <div class="journey">
+                        <div class="step">
+                            <div class="index">1</div>
+                            <div>
+                                <h3>Especificacion correcta</h3>
+                                <p>Crear o seleccionar limites, objetivo, unidad y tamano de muestra correctos.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="index">2</div>
+                            <div>
+                                <h3>Captura de muestras</h3>
+                                <p>Registrar valores con trazabilidad de lote, turno o responsable.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="index">3</div>
+                            <div>
+                                <h3>Analisis SPC y capacidad</h3>
+                                <p>Explicar cartas, reglas y lectura basica de Cp/Cpk para no sobrerreaccionar.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="index">4</div>
+                            <div>
+                                <h3>NC y CAPA</h3>
+                                <p>Si el hallazgo amerita accion formal, abrir no conformidad y luego plan CAPA con responsable y fecha.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="note">
+                        <p class="eyebrow">Lo que debe quedar claro</p>
+                        <p>La calidad en Takta no termina en el grafico. La madurez esta en escalar hallazgos a acciones verificables y llevarlos a comite cuando aplique.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide" data-title="Gobernanza">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Gobernanza</p>
+                    <h2 class="slide-title">Excelencia, Actas y Documentos cierran el ciclo.</h2>
+                    <div class="module-grid">
+                        <article class="tile">
+                            <span class="tag">Excelencia</span>
+                            <h3>Acciones y KPI MC</h3>
+                            <p>Seguimiento transversal de brechas, auditorias 5S, Kanban, VSM y scorecards.</p>
+                        </article>
+                        <article class="tile">
+                            <span class="tag">Actas IP</span>
+                            <h3>Comite con memoria</h3>
+                            <p>Participantes, agenda, focos, compromisos y comparativo entre reuniones.</p>
+                        </article>
+                        <article class="tile">
+                            <span class="tag">Documentos</span>
+                            <h3>Soporte versionado</h3>
+                            <p>Editor documental y repositorio para instrucciones, formatos y evidencia formal.</p>
+                        </article>
+                    </div>
+                    <div class="two-col">
+                        <div class="panel">
+                            <p class="eyebrow">Ejemplo de historia completa</p>
+                            <p>Muestra fuera de especificacion -> NC/CAPA -> accion en Excelencia -> revision en Actas -> soporte documental en Editor/Documentos.</p>
+                        </div>
+                        <div class="panel">
+                            <p class="eyebrow">Objetivo pedagogico</p>
+                            <p>Que el usuario deje de ver cada modulo como "su pantalla" y entienda el hilo de trazabilidad entre captura, analisis, decision y evidencia.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="slide" data-title="Diagramas y Layout">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Visual</p>
+                    <h2 class="slide-title">Diagram Studio complementa el trabajo tecnico y de mejora.</h2>
+                    <div class="two-col">
+                        <div class="panel">
+                            <p class="eyebrow">Para que sirve</p>
+                            <ul class="list">
+                                <li><span class="bullet">1</span><span>Representar layouts, flujos y relaciones visuales de planta.</span></li>
+                                <li><span class="bullet">2</span><span>Usar librerias, capas y propiedades para mantener coherencia.</span></li>
+                                <li><span class="bullet">3</span><span>Apoyar decisiones de capacidad o rediseño con escenarios.</span></li>
+                            </ul>
+                        </div>
+                        <div class="panel">
+                            <p class="eyebrow">Cuando mostrarlo en capacitacion</p>
+                            <p>No lo presentes como modulo aislado. Funciona mejor cuando el equipo ya entendio activos, flujo, restricciones y necesidades de mejora.</p>
+                            <div class="note">
+                                <p class="eyebrow">Tip</p>
+                                <p>Usa un layout pequeno y reconocible; evita mostrar un canvas complejo sin narrativa.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide" data-title="Configuracion">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Plataforma</p>
+                    <h2 class="slide-title">Configuracion, white label y operacion del tenant.</h2>
+                    <div class="three-col">
+                        <article class="tile">
+                            <span class="tag">White label</span>
+                            <h3>Marca, logo y paleta</h3>
+                            <p>Mostrar como el tenant define branding y como esto impacta la experiencia visible.</p>
+                        </article>
+                        <article class="tile">
+                            <span class="tag">Feature flags</span>
+                            <h3>Capacidades visibles</h3>
+                            <p>Un modulo ausente no siempre es error; puede estar controlado por configuracion.</p>
+                        </article>
+                        <article class="tile">
+                            <span class="tag">Offline e integracion</span>
+                            <h3>Confiabilidad</h3>
+                            <p>Cola offline, salud de integraciones y eventos de observabilidad para soporte.</p>
+                        </article>
+                    </div>
+                    <div class="note">
+                        <p class="eyebrow">Para admins</p>
+                        <p>En capacitacion administrativa, enfatiza que tocar branding o flags sin criterio cambia navegacion, onboarding y soporte. No es solo estetica.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide" data-title="Buenas Practicas">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Disciplina</p>
+                    <h2 class="slide-title">Buenas practicas y errores frecuentes.</h2>
+                    <div class="two-col">
+                        <div class="panel">
+                            <p class="eyebrow">Buenas practicas</p>
+                            <ul class="list">
+                                <li><span class="bullet">OK</span><span>Definir contexto antes de entrar a modulos dependientes.</span></li>
+                                <li><span class="bullet">OK</span><span>Capturar datos lo mas cerca posible al evento real.</span></li>
+                                <li><span class="bullet">OK</span><span>Cerrar compromisos, paros y acciones con responsable y fecha.</span></li>
+                                <li><span class="bullet">OK</span><span>Usar documentos y actas para dejar soporte auditable.</span></li>
+                            </ul>
+                        </div>
+                        <div class="panel">
+                            <p class="eyebrow">Errores comunes</p>
+                            <ul class="list">
+                                <li><span class="bullet">X</span><span>Crear datos sueltos sin relacionarlos con activo, SKU o estandar.</span></li>
+                                <li><span class="bullet">X</span><span>Usar dashboards o listados como si fueran captura principal.</span></li>
+                                <li><span class="bullet">X</span><span>Asumir que todo vacio es bug sin revisar filtros, flags o permisos.</span></li>
+                                <li><span class="bullet">X</span><span>Confundir evidencia estadistica con cierre de problema.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide" data-title="Cierre">
+                <div class="slide-shell">
+                    <p class="slide-kicker">Cierre</p>
+                    <h2 class="slide-title">Checklist final para una capacitacion exitosa.</h2>
+                    <div class="journey">
+                        <div class="step">
+                            <div class="index">1</div>
+                            <div>
+                                <h3>Demostrar un caso completo</h3>
+                                <p>Desde crear o seleccionar contexto hasta cerrar una accion o evidencia final.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="index">2</div>
+                            <div>
+                                <h3>Validar entendimiento por rol</h3>
+                                <p>Operacion, ingenieria, calidad y admin no necesitan el mismo nivel en todos los modulos.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="index">3</div>
+                            <div>
+                                <h3>Dejar ruta de soporte</h3>
+                                <p>Centro de ayuda en `#/docs`, configuracion del tenant y reglas basicas de diagnostico.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="two-col">
+                        <div class="panel">
+                            <p class="eyebrow">Siguiente paso recomendado</p>
+                            <p>Usar esta presentacion junto con una demo en vivo en el entorno local o tenant de entrenamiento.</p>
+                        </div>
+                        <div class="panel">
+                            <p class="eyebrow">Mensaje final</p>
+                            <p><span class="success">Takta agrega valor cuando conecta hechos, no cuando acumula formularios.</span> Capacita a los usuarios para pensar en flujo, contexto y cierre.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footerbar">
+            <div class="thumbnails" id="thumbnails"></div>
+            <div class="controls">
+                <div class="keyboard">
+                    Usa <span class="kbd">←</span><span class="kbd">→</span> o <span class="kbd">Space</span>
+                </div>
+                <div class="counter" id="counter">1 / 11</div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        (() => {
+            const slides = Array.from(document.querySelectorAll('.slide'));
+            const thumbnails = document.getElementById('thumbnails');
+            const counter = document.getElementById('counter');
+            const progressBar = document.getElementById('progress-bar');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            let current = 0;
+
+            function buildThumbnails() {
+                slides.forEach((slide, index) => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'thumb';
+                    button.innerHTML = `<strong>${String(index + 1).padStart(2, '0')}</strong><span>${slide.dataset.title || `Slide ${index + 1}`}</span>`;
+                    button.addEventListener('click', () => goTo(index));
+                    thumbnails.appendChild(button);
+                });
+            }
+
+            function syncUi() {
+                slides.forEach((slide, index) => {
+                    slide.classList.toggle('active', index === current);
+                });
+
+                Array.from(thumbnails.children).forEach((thumb, index) => {
+                    thumb.classList.toggle('active', index === current);
+                });
+
+                counter.textContent = `${current + 1} / ${slides.length}`;
+                progressBar.style.width = `${((current + 1) / slides.length) * 100}%`;
+                prevBtn.disabled = current === 0;
+                nextBtn.disabled = current === slides.length - 1;
+            }
+
+            function goTo(index) {
+                current = Math.max(0, Math.min(slides.length - 1, index));
+                syncUi();
+            }
+
+            function next() {
+                goTo(current + 1);
+            }
+
+            function prev() {
+                goTo(current - 1);
+            }
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') {
+                    event.preventDefault();
+                    next();
+                }
+
+                if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+                    event.preventDefault();
+                    prev();
+                }
+
+                if (event.key === 'Home') {
+                    event.preventDefault();
+                    goTo(0);
+                }
+
+                if (event.key === 'End') {
+                    event.preventDefault();
+                    goTo(slides.length - 1);
+                }
+            });
+
+            prevBtn.addEventListener('click', prev);
+            nextBtn.addEventListener('click', next);
+
+            buildThumbnails();
+            syncUi();
+        })();
+    </script>
+</body>
+</html>

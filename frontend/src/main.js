@@ -1,4 +1,4 @@
-import './style.css';
+﻿import './style.css';
 import ApiClient from './services/api.client.js';
 import Router from './router.js';
 
@@ -83,7 +83,7 @@ class App {
       routes = {
         '/': async () => (await import('./pages/LandingPage.js')).default({ mode: 'landing', user: null }),
         '/landing': async () => (await import('./pages/LandingPage.js')).default({ mode: 'landing', user: null }),
-        '/docs': async () => (await import('./pages/LandingPage.js')).default({ mode: 'docs', user: null }),
+        '/docs': async () => (await import('./pages/DocsPage.js')).default({ user: null }),
         '/login': async () => (await import('./pages/Login.js')).default(),
         '*': () => {
           // Redirect unknown routes to landing when not authenticated.
@@ -95,7 +95,7 @@ class App {
       routes = {
         '/': async () => (await import('./pages/DashboardPage.js')).default(this.user),
         '/landing': async () => (await import('./pages/LandingPage.js')).default({ mode: 'landing', user: this.user }),
-        '/docs': async () => (await import('./pages/LandingPage.js')).default({ mode: 'docs', user: this.user }),
+        '/docs': async () => (await import('./pages/DocsPage.js')).default({ user: this.user }),
         '/assets': async () => (await import('./pages/AssetsPage.js')).default(),
         '/engineering': async () => (await import('./pages/EngineeringPage.js')).default(),
         '/timing': async () => (await import('./pages/TimingPage.js')).default(),
@@ -136,6 +136,7 @@ class App {
     void import('./pages/ExcellencePage.js');
     void import('./pages/SettingsPage.js');
     void import('./pages/LandingPage.js');
+    void import('./pages/DocsPage.js');
   }
 }
 

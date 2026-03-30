@@ -1,4 +1,5 @@
 ﻿import ApiClient from '../services/api.client.js';
+import { getRuntimeBrand } from '../services/tenant-ui.service.js';
 
 /**
  * Login Page
@@ -6,12 +7,19 @@
 const LoginPage = async () => {
     const container = document.createElement('div');
     container.className = 'flex items-center justify-center min-h-screen bg-slate-50 w-full absolute top-0 left-0 z-50';
+    const brand = getRuntimeBrand();
+    const brandName = String(brand.brandName || 'TAKTA');
+    const badgeLabel = String(brand.badgeLabel || 'OAC-SEO');
+    const logoMarkup = brand.logoUrl
+        ? `<img src="${brand.logoUrl}" alt="${brandName}" class="tk-brand-logo tk-brand-logo--lg mx-auto" loading="eager">`
+        : `<div class="mx-auto h-14 w-14 rounded-2xl border border-brand-orange/20 bg-brand-orange/10 text-brand-orange flex items-center justify-center text-xl font-bold">${brandName.charAt(0).toUpperCase()}</div>`;
 
     container.innerHTML = `
         <div class="w-full max-w-md p-8 bg-white rounded-xl shadow-lg border border-slate-100">
             <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-blue-800 tracking-tight">TAKTA</h1>
-                <p class="text-slate-500 mt-2 text-sm uppercase tracking-widest font-semibold">OAC-SEO Foundation</p>
+                ${logoMarkup}
+                <h1 class="text-3xl font-bold text-slate-900 tracking-tight mt-4">${brandName}</h1>
+                <p class="text-brand-orange mt-2 text-sm uppercase tracking-widest font-semibold">${badgeLabel}</p>
                 <h2 class="text-xl font-semibold text-slate-800 mt-6">Iniciar Sesión</h2>
             </div>
             
@@ -21,19 +29,19 @@ const LoginPage = async () => {
                 <div>
                     <label for="username" class="block text-sm font-medium text-slate-700 mb-1">Usuario</label>
                     <input type="text" id="username" name="username" required autocomplete="username"
-                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-slate-400"
+                        class="w-full tk-input px-4 py-2 outline-none transition-all placeholder-slate-400"
                         placeholder="Ej: admin">
                 </div>
                 
                 <div>
                     <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
                     <input type="password" id="password" name="password" required autocomplete="current-password"
-                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-slate-400"
-                        placeholder="••••••••">
+                        class="w-full tk-input px-4 py-2 outline-none transition-all placeholder-slate-400"
+                        placeholder="********">
                 </div>
                 
                 <button type="submit" id="submit-btn"
-                    class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                    class="w-full flex justify-center py-2.5 px-4 tk-btn-primary shadow-sm text-sm">
                     <span>Ingresar al Sistema</span>
                 </button>
             </form>
@@ -43,7 +51,7 @@ const LoginPage = async () => {
                     MVP Demo: Usa <code>admin</code> / <code>admin123</code> o <br><code>ingeniero</code> / <code>takta2026</code>
                 </p>
                 <div class="mt-4 flex items-center justify-center gap-2">
-                    <a href="#/landing" class="px-2.5 py-1.5 rounded-md border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">Conocer Takta</a>
+                    <a href="#/landing" class="px-2.5 py-1.5 rounded-md border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">Conocer la plataforma</a>
                     <a href="#/docs" class="px-2.5 py-1.5 rounded-md border border-brand-orange bg-brand-orange/10 text-xs font-semibold text-brand-orange hover:bg-cyan-100">Guia de usuario</a>
                 </div>
             </div>
@@ -70,8 +78,8 @@ const LoginPage = async () => {
                 },
                 body: JSON.stringify({
                     username: formData.get('username'),
-                    password: formData.get('password')
-                })
+                    password: formData.get('password'),
+                }),
             });
 
             if (!response.ok) {
@@ -89,7 +97,6 @@ const LoginPage = async () => {
 
             // Navigate to main
             window.location.hash = '/';
-
         } catch (error) {
             alert.textContent = error.message;
             alert.classList.remove('hidden');
@@ -103,4 +110,3 @@ const LoginPage = async () => {
 };
 
 export default LoginPage;
-

@@ -1,4 +1,4 @@
-import ApiClient from '../services/api.client.js';
+﻿import ApiClient from '../services/api.client.js';
 import uiFeedback from '../services/ui-feedback.service.js';
 import platformService from '../services/platform.service.js';
 import offlineSyncService from '../services/offline-sync.service.js';
@@ -124,6 +124,75 @@ function renderIntegrationEvents(rows = []) {
     `;
 }
 
+function normalizeHexColor(value, fallback) {
+    const raw = String(value || '').trim();
+    if (/^#[0-9a-f]{6}$/i.test(raw)) return raw.toLowerCase();
+    if (/^#[0-9a-f]{3}$/i.test(raw)) {
+        return `#${raw[1]}${raw[1]}${raw[2]}${raw[2]}${raw[3]}${raw[3]}`.toLowerCase();
+    }
+    return fallback;
+}
+
+function getThemeFormSnapshot(container, runtimeTheme = {}) {
+    const currentColors = runtimeTheme?.colors || {};
+    return {
+        brand_name: container.querySelector('#settings-theme-brand')?.value?.trim() || 'TAKTA',
+        badge_label: container.querySelector('#settings-theme-badge')?.value?.trim() || 'OAC-SEO',
+        logo_url: container.querySelector('#settings-theme-logo')?.value?.trim() || '',
+        colors: {
+            ...currentColors,
+            brand_orange: normalizeHexColor(container.querySelector('#settings-theme-color-brand')?.value, '#f97316'),
+            brand_orange_dark: normalizeHexColor(container.querySelector('#settings-theme-color-brand-dark')?.value, '#ea580c'),
+            surface: normalizeHexColor(container.querySelector('#settings-theme-color-surface')?.value, '#ffffff'),
+            surface_soft: normalizeHexColor(container.querySelector('#settings-theme-color-surface-soft')?.value, '#f8fafc'),
+            text_primary: normalizeHexColor(container.querySelector('#settings-theme-color-text-primary')?.value, '#0f172a'),
+            text_secondary: normalizeHexColor(container.querySelector('#settings-theme-color-text-secondary')?.value, '#334155'),
+        },
+    };
+}
+
+function renderThemePreview(container, theme = {}) {
+    const previewNode = container.querySelector('#settings-theme-preview');
+    if (!previewNode) return;
+
+    const snapshot = theme.colors ? theme : getThemeFormSnapshot(container, theme);
+    const brandName = snapshot.brand_name || 'TAKTA';
+    const badgeLabel = snapshot.badge_label || 'OAC-SEO';
+    const logoUrl = snapshot.logo_url || '';
+    const colors = snapshot.colors || {};
+    const logoMarkup = logoUrl
+        ? `<img src="${logoUrl}" alt="${brandName}" class="tk-brand-logo tk-brand-logo--lg">`
+        : `<div class="h-14 w-14 rounded-2xl flex items-center justify-center text-lg font-bold" style="background:${colors.surface_soft || '#f8fafc'}; color:${colors.brand_orange || '#f97316'}; border:1px solid ${colors.brand_orange || '#f97316'}33;">${String(brandName).charAt(0).toUpperCase()}</div>`;
+
+    previewNode.innerHTML = `
+        <div class="rounded-xl border p-4" style="background:${colors.surface || '#ffffff'}; border-color:${colors.text_secondary || '#334155'}22; color:${colors.text_primary || '#0f172a'};">
+            <div class="flex items-center gap-3">
+                ${logoMarkup}
+                <div class="min-w-0">
+                    <p class="text-lg font-semibold truncate" style="color:${colors.text_primary || '#0f172a'};">${brandName}</p>
+                    <span class="inline-flex mt-1 rounded-full px-2 py-0.5 text-xs font-semibold" style="background:${colors.brand_orange || '#f97316'}1a; color:${colors.brand_orange || '#f97316'};">${badgeLabel}</span>
+                </div>
+            </div>
+            <div class="mt-4 grid grid-cols-2 xl:grid-cols-3 gap-2">
+                ${[
+        ['Marca', colors.brand_orange || '#f97316'],
+        ['Hover', colors.brand_orange_dark || '#ea580c'],
+        ['Base', colors.surface || '#ffffff'],
+        ['Soft', colors.surface_soft || '#f8fafc'],
+        ['Texto', colors.text_primary || '#0f172a'],
+        ['Texto 2', colors.text_secondary || '#334155'],
+    ].map(([label, color]) => `
+                    <div class="rounded-lg border p-2" style="border-color:${colors.text_secondary || '#334155'}22;">
+                        <div class="h-8 rounded-md" style="background:${color};"></div>
+                        <p class="mt-1 text-[11px] font-semibold uppercase tracking-wide">${label}</p>
+                        <p class="text-[11px] opacity-70">${color}</p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
 async function SettingsPage() {
     const container = document.createElement('div');
     container.className = 'p-6 max-w-6xl mx-auto';
@@ -200,7 +269,7 @@ async function SettingsPage() {
             <section class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm xl:col-span-2">
                 <h2 class="text-sm font-semibold text-slate-800 mb-2">White Label y Feature Flags</h2>
                 <p class="text-sm text-slate-600 mb-4">Configura branding por tenant, perfil mínimo/full y habilitación de módulos.</p>
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
                     <div>
                         <label class="block text-xs text-slate-500 mb-1">Tenant</label>
                         <select id="settings-tenant-select" class="w-full tk-select px-3 py-2 text-sm"></select>
@@ -214,10 +283,37 @@ async function SettingsPage() {
                         <input id="settings-theme-badge" class="w-full tk-input px-3 py-2 text-sm" placeholder="OAC-SEO">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-500 mb-1">Color marca</label>
-                        <input type="color" id="settings-theme-color" class="w-full h-10 rounded-md border border-slate-200 p-1">
+                        <label class="block text-xs text-slate-500 mb-1">Logo URL</label>
+                        <input id="settings-theme-logo" class="w-full tk-input px-3 py-2 text-sm" placeholder="https://.../logo.svg">
                     </div>
                 </div>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Marca principal</label>
+                        <input type="color" id="settings-theme-color-brand" class="w-full h-10 rounded-md border border-slate-200 p-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Marca hover</label>
+                        <input type="color" id="settings-theme-color-brand-dark" class="w-full h-10 rounded-md border border-slate-200 p-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Superficie base</label>
+                        <input type="color" id="settings-theme-color-surface" class="w-full h-10 rounded-md border border-slate-200 p-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Superficie suave</label>
+                        <input type="color" id="settings-theme-color-surface-soft" class="w-full h-10 rounded-md border border-slate-200 p-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Texto principal</label>
+                        <input type="color" id="settings-theme-color-text-primary" class="w-full h-10 rounded-md border border-slate-200 p-1">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Texto secundario</label>
+                        <input type="color" id="settings-theme-color-text-secondary" class="w-full h-10 rounded-md border border-slate-200 p-1">
+                    </div>
+                </div>
+                <div id="settings-theme-preview" class="mt-4"></div>
                 <div class="mt-3 flex flex-wrap gap-2">
                     <button id="settings-save-theme" class="px-4 py-2 text-sm font-semibold rounded-lg bg-brand-orange text-white hover:bg-orange-600">Guardar Branding</button>
                     <button id="settings-profile-min" class="px-4 py-2 text-sm font-semibold rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50">Perfil mínimo</button>
@@ -319,8 +415,15 @@ async function SettingsPage() {
 
         container.querySelector('#settings-theme-brand').value = runtime?.theme?.brand_name || 'TAKTA';
         container.querySelector('#settings-theme-badge').value = runtime?.theme?.badge_label || 'OAC-SEO';
-        container.querySelector('#settings-theme-color').value = runtime?.theme?.colors?.brand_orange || '#f97316';
+        container.querySelector('#settings-theme-logo').value = runtime?.theme?.logo_url || '';
+        container.querySelector('#settings-theme-color-brand').value = normalizeHexColor(runtime?.theme?.colors?.brand_orange, '#f97316');
+        container.querySelector('#settings-theme-color-brand-dark').value = normalizeHexColor(runtime?.theme?.colors?.brand_orange_dark, '#ea580c');
+        container.querySelector('#settings-theme-color-surface').value = normalizeHexColor(runtime?.theme?.colors?.surface, '#ffffff');
+        container.querySelector('#settings-theme-color-surface-soft').value = normalizeHexColor(runtime?.theme?.colors?.surface_soft, '#f8fafc');
+        container.querySelector('#settings-theme-color-text-primary').value = normalizeHexColor(runtime?.theme?.colors?.text_primary, '#0f172a');
+        container.querySelector('#settings-theme-color-text-secondary').value = normalizeHexColor(runtime?.theme?.colors?.text_secondary, '#334155');
         featureFlagsContainer.innerHTML = renderFeatureFlags(state.flags);
+        renderThemePreview(container, runtime?.theme || {});
     }
 
     async function loadHealthDashboard() {
@@ -504,20 +607,30 @@ async function SettingsPage() {
     container.querySelector('#settings-save-theme')?.addEventListener('click', async () => {
         try {
             const tenantQuery = state.tenantCode ? `tenant_code=${encodeURIComponent(state.tenantCode)}` : '';
-            const payload = {
-                brand_name: container.querySelector('#settings-theme-brand')?.value?.trim() || 'TAKTA',
-                badge_label: container.querySelector('#settings-theme-badge')?.value?.trim() || 'OAC-SEO',
-                colors: {
-                    ...(state.runtime?.theme?.colors || {}),
-                    brand_orange: container.querySelector('#settings-theme-color')?.value || '#f97316',
-                },
-            };
+            const payload = getThemeFormSnapshot(container, state.runtime?.theme || {});
             await platformService.updateTheme(payload, tenantQuery);
             await bootstrapTenantRuntime({ tenant_id: state.tenantCode });
+            await loadRuntimeAndFlags();
             showStatus(themeStatusNode, 'Branding actualizado correctamente.');
         } catch (error) {
             showStatus(themeStatusNode, `Error actualizando branding: ${error.message}`, true);
         }
+    });
+
+    [
+        '#settings-theme-brand',
+        '#settings-theme-badge',
+        '#settings-theme-logo',
+        '#settings-theme-color-brand',
+        '#settings-theme-color-brand-dark',
+        '#settings-theme-color-surface',
+        '#settings-theme-color-surface-soft',
+        '#settings-theme-color-text-primary',
+        '#settings-theme-color-text-secondary',
+    ].forEach((selector) => {
+        container.querySelector(selector)?.addEventListener('input', () => {
+            renderThemePreview(container, state.runtime?.theme || {});
+        });
     });
 
     container.querySelector('#settings-profile-min')?.addEventListener('click', async () => {

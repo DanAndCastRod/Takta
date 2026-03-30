@@ -53,6 +53,59 @@ def test_meeting_create_and_list(client, auth_headers):
     assert rows[0]["title"] == "Arranque semanal IP"
 
 
+def test_meeting_list_supports_legacy_payload_shapes(client, auth_headers):
+    from backend.app.db import get_engine
+    from sqlalchemy import text
+    from sqlmodel import Session
+
+    today = date.today()
+    create_resp = client.post(
+        "/api/meetings/records",
+        json={
+            "title": "Acta legacy",
+            "meeting_date": today.isoformat(),
+            "status": "Open",
+        },
+        headers=auth_headers,
+    )
+    assert create_resp.status_code == 200
+    meeting_id = create_resp.json()["id"]
+
+    engine = get_engine()
+    with Session(engine) as session:
+        session.connection().execute(
+            text(
+                """
+                UPDATE engineeringmeeting
+                SET agenda_json = :agenda,
+                    kpis_json = :kpis,
+                    focuses_json = :focuses,
+                    commitments_json = :commitments
+                WHERE id = :meeting_id
+                """
+            ),
+            {
+                "agenda": '["KPI MC", "SPC", "CAPA"]',
+                "kpis": '[{"name": "Cumplimiento MC", "value": 82.86}]',
+                "focuses": '["Merma", "Sobrepeso"]',
+                "commitments": '[{"owner": "Ingeniería", "task": "Actualizar estándar"}]',
+                "meeting_id": meeting_id.replace("-", ""),
+            },
+        )
+        session.commit()
+
+    list_resp = client.get("/api/meetings/records", headers=auth_headers)
+    assert list_resp.status_code == 200
+    rows = list_resp.json()
+    legacy = next(row for row in rows if row["id"] == meeting_id)
+    assert [item["title"] for item in legacy["agenda"]] == ["KPI MC", "SPC", "CAPA"]
+    assert legacy["kpis"][0]["objective"] == "Cumplimiento MC"
+    assert legacy["kpis"][0]["current_value"] == 82.86
+    assert [item["focus"] for item in legacy["focuses"]] == ["Merma", "Sobrepeso"]
+    assert legacy["commitments"][0]["description"] == "Actualizar estándar"
+    assert legacy["commitments"][0]["responsible"] == "Ingeniería"
+
+
 def test_materialize_commitments_to_actions(client, auth_headers):
     asset = _create_asset(client, auth_headers, name="Area Empaque", type_="Area")
     due = date.today() + timedelta(days=2)

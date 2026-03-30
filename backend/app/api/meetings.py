@@ -261,7 +261,7 @@ class HeuristicImportResponse(BaseModel):
     warnings: List[str] = Field(default_factory=list)
 
 
-def _json_to_list(raw: Optional[str]) -> List[Dict[str, Any]]:
+def _json_to_list(raw: Optional[str]) -> List[Any]:
     if not raw:
         return []
     try:
@@ -269,6 +269,111 @@ def _json_to_list(raw: Optional[str]) -> List[Dict[str, Any]]:
     except Exception:
         return []
     return parsed if isinstance(parsed, list) else []
+
+
+def _to_string(value: Any) -> Optional[str]:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def _parse_participants(raw: Optional[str]) -> List[MeetingParticipant]:
+    participants: List[MeetingParticipant] = []
+    for row in _json_to_list(raw):
+        try:
+            if isinstance(row, str):
+                name = _to_string(row)
+                if name:
+                    participants.append(MeetingParticipant(name=name))
+                continue
+            if not isinstance(row, dict):
+                continue
+            normalized = dict(row)
+            name = _to_string(normalized.get("name") or normalized.get("participant"))
+            if not name:
+                continue
+            normalized["name"] = name
+            participants.append(MeetingParticipant(**normalized))
+        except Exception:
+            continue
+    return participants
+
+
+def _parse_agenda(raw: Optional[str]) -> List[MeetingAgendaItem]:
+    agenda: List[MeetingAgendaItem] = []
+    for index, row in enumerate(_json_to_list(raw), start=1):
+        try:
+            if isinstance(row, str):
+                title = _to_string(row)
+                if title:
+                    agenda.append(MeetingAgendaItem(order=index, title=title))
+                continue
+            if not isinstance(row, dict):
+                continue
+            normalized = dict(row)
+            title = _to_string(normalized.get("title") or normalized.get("name") or normalized.get("topic"))
+            if not title:
+                continue
+            normalized["order"] = int(normalized.get("order") or index)
+            normalized["title"] = title
+            decisions = normalized.get("decisions")
+            if isinstance(decisions, str):
+                normalized["decisions"] = [decisions]
+            elif not isinstance(decisions, list):
+                normalized["decisions"] = []
+            agenda.append(MeetingAgendaItem(**normalized))
+        except Exception:
+            continue
+    return agenda
+
+
+def _parse_kpis(raw: Optional[str]) -> List[MeetingKpiItem]:
+    kpis: List[MeetingKpiItem] = []
+    for row in _json_to_list(raw):
+        try:
+            if isinstance(row, str):
+                objective = _to_string(row)
+                if objective:
+                    kpis.append(MeetingKpiItem(objective=objective))
+                continue
+            if not isinstance(row, dict):
+                continue
+            normalized = dict(row)
+            objective = _to_string(normalized.get("objective") or normalized.get("name") or normalized.get("title"))
+            if not objective:
+                continue
+            normalized["objective"] = objective
+            if normalized.get("current_value") is None and normalized.get("value") is not None:
+                normalized["current_value"] = normalized.get("value")
+            kpis.append(MeetingKpiItem(**normalized))
+        except Exception:
+            continue
+    return kpis
+
+
+def _parse_focuses(raw: Optional[str]) -> List[MeetingFocusItem]:
+    focuses: List[MeetingFocusItem] = []
+    for row in _json_to_list(raw):
+        try:
+            if isinstance(row, str):
+                focus = _to_string(row)
+                if focus:
+                    focuses.append(MeetingFocusItem(focus=focus))
+                continue
+            if not isinstance(row, dict):
+                continue
+            normalized = dict(row)
+            focus = _to_string(normalized.get("focus") or normalized.get("name") or normalized.get("title"))
+            if not focus:
+                continue
+            normalized["focus"] = focus
+            if normalized.get("due_date"):
+                normalized["due_date"] = _as_date(normalized.get("due_date"))
+            focuses.append(MeetingFocusItem(**normalized))
+        except Exception:
+            continue
+    return focuses
 
 
 def _dump_models(items: Optional[List[Any]]) -> str:
@@ -324,11 +429,24 @@ def _as_date(value: Any) -> Optional[date]:
         return None
 
 
-def _to_commitment_models(raw_commitments: List[Dict[str, Any]]) -> List[MeetingCommitmentItem]:
+def _to_commitment_models(raw_commitments: List[Any]) -> List[MeetingCommitmentItem]:
     items: List[MeetingCommitmentItem] = []
     for row in raw_commitments:
         try:
+            if isinstance(row, str):
+                description = _to_string(row)
+                if description:
+                    items.append(MeetingCommitmentItem(description=description, responsible="Pendiente"))
+                continue
+            if not isinstance(row, dict):
+                continue
             row = dict(row)
+            if not row.get("description") and row.get("task"):
+                row["description"] = row.get("task")
+            if not row.get("responsible") and row.get("owner"):
+                row["responsible"] = row.get("owner")
+            if not row.get("status"):
+                row["status"] = "Open"
             row["status"] = _normalize_status(row.get("status"))
             if row.get("due_date"):
                 row["due_date"] = _as_date(row.get("due_date"))
@@ -374,10 +492,10 @@ def _validate_commitment_references(
 
 
 def _to_meeting_read(session: Session, meeting: EngineeringMeeting) -> MeetingRead:
-    participants = [MeetingParticipant(**row) for row in _json_to_list(meeting.participants_json)]
-    agenda = [MeetingAgendaItem(**row) for row in _json_to_list(meeting.agenda_json)]
-    kpis = [MeetingKpiItem(**row) for row in _json_to_list(meeting.kpis_json)]
-    focuses = [MeetingFocusItem(**row) for row in _json_to_list(meeting.focuses_json)]
+    participants = _parse_participants(meeting.participants_json)
+    agenda = _parse_agenda(meeting.agenda_json)
+    kpis = _parse_kpis(meeting.kpis_json)
+    focuses = _parse_focuses(meeting.focuses_json)
     commitments = _to_commitment_models(_json_to_list(meeting.commitments_json))
 
     today = date.today()

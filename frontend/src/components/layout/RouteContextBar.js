@@ -2,6 +2,7 @@
 
 const ROUTE_META = {
     '/': { label: 'Dashboard', section: 'Inicio', parentPath: null, help: 'Usa accesos rápidos para iniciar un flujo end-to-end por módulo.' },
+    '/docs': { label: 'Centro de Ayuda', section: 'Soporte', parentPath: '/', help: 'Consulta la guia completa por modulo, entidad, flujo y soporte operativo.' },
     '/assets': { label: 'Árbol de Activos', section: 'Ingeniería', parentPath: '/', help: 'Selecciona o crea un activo para abrir el resto de módulos en contexto.' },
     '/engineering': { label: 'Ingeniería', section: 'Ingeniería', parentPath: '/', help: 'Define actividad/referencia/estándar para habilitar cronómetro, capacidad y muestreo.' },
     '/timing': { label: 'Cronómetro', section: 'Ingeniería', parentPath: '/engineering', help: 'Captura estudio y luego navega a estándares o capacidad con el mismo contexto.' },
@@ -23,6 +24,11 @@ const QUICK_ACTIONS = {
         { label: 'Nuevo Estándar', route: '#/engineering' },
         { label: 'Nuevo Documento', route: '#/editor' },
         { label: 'Nueva Muestra', route: '#/weight-sampling' },
+    ],
+    '/docs': [
+        { label: 'Ver Módulos', route: '#/docs?view=modules' },
+        { label: 'Ver Entidades', route: '#/docs?view=entities' },
+        { label: 'Ver Flujos', route: '#/docs?view=workflows' },
     ],
     '/assets': [
         { label: 'Crear Activo', route: '#/assets' },

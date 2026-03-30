@@ -1,4 +1,4 @@
-import integrationService from '../../services/integration.service.js';
+﻿import integrationService from '../../services/integration.service.js';
 import { getRuntimeBrand } from '../../services/tenant-ui.service.js';
 import {
     clearModuleContext,
@@ -11,6 +11,7 @@ import {
 class Navbar {
     constructor() {
         this.container = document.getElementById('app-navbar');
+        this.currentUser = null;
         this.contextOptions = null;
         this.contextSummary = null;
         this.summaryRequestId = 0;
@@ -30,7 +31,9 @@ class Navbar {
 
         window.addEventListener('online', () => this.renderNetworkBadge());
         window.addEventListener('offline', () => this.renderNetworkBadge());
-        window.addEventListener('tenant:runtime', () => this.renderNetworkBadge());
+        window.addEventListener('tenant:runtime', () => {
+            if (this.container?.childElementCount) this.render(this.currentUser);
+        });
         window.addEventListener('offline-sync:status', () => this.renderNetworkBadge());
     }
 
@@ -45,17 +48,27 @@ class Navbar {
 
     render(user) {
         if (!this.container) return;
+        this.currentUser = user || null;
         const brand = getRuntimeBrand();
         const brandName = Navbar.esc(brand.brandName || 'TAKTA');
         const badgeLabel = Navbar.esc(brand.badgeLabel || 'OAC-SEO');
+        const logoMarkup = brand.logoUrl
+            ? `<img src="${Navbar.esc(brand.logoUrl)}" alt="${brandName}" class="tk-brand-logo" loading="eager">`
+            : `<div class="h-9 w-9 rounded-xl border border-brand-orange/20 bg-brand-orange/10 text-brand-orange flex items-center justify-center text-sm font-bold">${Navbar.esc((brand.brandName || 'T').charAt(0).toUpperCase())}</div>`;
+        const brandLockup = `
+            <div class="flex items-center gap-3 min-w-0">
+                ${logoMarkup}
+                <div class="min-w-0">
+                    <div class="font-bold text-xl tracking-tight text-slate-800 truncate">${brandName}</div>
+                    <span class="inline-flex mt-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-orange/10 text-brand-orange">${badgeLabel}</span>
+                </div>
+            </div>
+        `;
 
         if (!user) {
             this.container.innerHTML = `
                 <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex justify-between items-center shadow-sm">
-                    <div class="flex items-center gap-2">
-                        <div class="font-bold text-xl tracking-tight text-slate-800">${brandName}</div>
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-orange/10 text-brand-orange">${badgeLabel}</span>
-                    </div>
+                    ${brandLockup}
                     <div class="flex items-center gap-2">
                         <a href="#/landing" class="px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">Landing</a>
                         <a href="#/docs" class="px-2.5 py-1.5 rounded-lg border border-brand-orange bg-brand-orange/10 text-xs font-semibold text-brand-orange hover:bg-cyan-100">Docs</a>
@@ -81,10 +94,7 @@ class Navbar {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
                     </button>
-                    <div class="flex items-center gap-2">
-                        <div class="font-bold text-xl tracking-tight text-slate-800">${brandName}</div>
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-orange/10 text-brand-orange">${badgeLabel}</span>
-                    </div>
+                    ${brandLockup}
                 </div>
 
                 <div class="flex items-center gap-3">

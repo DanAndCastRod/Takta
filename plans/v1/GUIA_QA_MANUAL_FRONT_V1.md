@@ -43,7 +43,7 @@ Validar que:
 1. Casos críticos (`AUTH`, `ASSET`, `ENG`, `TIME`, `XLSX`, `RESP`, `EXEC`, `EXC`, `VSM`, `PLANT`, `UTF8`, `PWA`, `ED-HOLDER`, `ACTA`) con 100% `PASS`.
 2. Sin `500` para flujos MVP.
 3. Sin `401` inesperados con sesión activa.
-4. Sin caracteres corruptos (`Ã`, `Â`, `�`) en labels, botones y mensajes.
+4. Sin mojibake ni caracteres corruptos en labels, botones y mensajes.
 
 ---
 

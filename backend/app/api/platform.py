@@ -76,19 +76,19 @@ DEFAULT_MENU = [
         ],
     },
     {
-        "title": "IngenierÃ­a",
+        "title": "Ingeniería",
         "items": [
-            {"id": "assets", "path": "#/assets", "label": "Ãrbol de activos", "feature": "module.assets"},
-            {"id": "engineering", "path": "#/engineering", "label": "IngenierÃ­a", "feature": "module.engineering"},
-            {"id": "timing", "path": "#/timing", "label": "CronÃ³metro", "feature": "module.timing"},
+            {"id": "assets", "path": "#/assets", "label": "Árbol de activos", "feature": "module.assets"},
+            {"id": "engineering", "path": "#/engineering", "label": "Ingeniería", "feature": "module.engineering"},
+            {"id": "timing", "path": "#/timing", "label": "Cronómetro", "feature": "module.timing"},
             {"id": "capacity", "path": "#/capacity", "label": "Capacidad", "feature": "module.capacity"},
         ],
     },
     {
-        "title": "OperaciÃ³n",
+        "title": "Operación",
         "items": [
-            {"id": "execution", "path": "#/execution", "label": "EjecuciÃ³n", "feature": "module.execution"},
-            {"id": "mobile", "path": "#/mobile", "label": "Piso mÃ³vil", "feature": "module.execution.mobile"},
+            {"id": "execution", "path": "#/execution", "label": "Ejecución", "feature": "module.execution"},
+            {"id": "mobile", "path": "#/mobile", "label": "Piso móvil", "feature": "module.execution.mobile"},
         ],
     },
     {
@@ -100,7 +100,7 @@ DEFAULT_MENU = [
         ],
     },
     {
-        "title": "DocumentaciÃ³n y DiseÃ±o",
+        "title": "Documentación y Diseño",
         "items": [
             {"id": "editor", "path": "#/editor", "label": "Editor docs", "feature": "module.documents.editor"},
             {"id": "documents", "path": "#/documents", "label": "Documentos", "feature": "module.documents"},
@@ -108,6 +108,17 @@ DEFAULT_MENU = [
         ],
     },
 ]
+
+DEFAULT_MENU_ITEM_BY_ID = {
+    str(item["id"]): item
+    for group in DEFAULT_MENU
+    for item in group.get("items", [])
+    if item.get("id")
+}
+DEFAULT_MENU_TITLE_BY_ITEM_IDS = {
+    tuple(str(item["id"]) for item in group.get("items", []) if item.get("id")): group["title"]
+    for group in DEFAULT_MENU
+}
 
 
 FEATURE_CATALOG = [
@@ -158,11 +169,11 @@ DEFAULT_PROPERTY_SCHEMAS = {
             {"key": "assetId", "label": "Activo", "type": "asset_ref", "required": False},
             {"key": "zoneType", "label": "Tipo de zona", "type": "enum", "options": ["production", "storage", "office", "transit"], "default": "production"},
             {"key": "capacity", "label": "Capacidad u/h", "type": "number", "min": 0, "default": 60},
-            {"key": "wipLimit", "label": "LÃ­mite WIP", "type": "number", "min": 0, "default": 0},
+            {"key": "wipLimit", "label": "Límite WIP", "type": "number", "min": 0, "default": 0},
         ],
     },
     "ellipse": {
-        "title": "EstaciÃ³n",
+        "title": "Estación",
         "fields": [
             {"key": "assetId", "label": "Activo", "type": "asset_ref", "required": False},
             {"key": "cycleTimeSec", "label": "Tiempo ciclo (s)", "type": "number", "min": 1, "default": 60},
@@ -235,6 +246,66 @@ def _json_load(value: Optional[str], fallback: Any) -> Any:
         return fallback
 
 
+def _repair_mojibake_text(value: Any) -> Any:
+    if not isinstance(value, str):
+        return value
+    text = value
+    if not any(token in text for token in ("Ã", "Â", "â", "\ufffd", "\x81", "\x8d", "\x8f", "\x90", "\x9d")):
+        return text.replace("\u00ad", "")
+    try:
+        repaired = text.encode("latin1", errors="ignore").decode("utf-8")
+        return (repaired or text).replace("\u00ad", "")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return text.replace("\u00ad", "")
+
+
+def _repair_nested_strings(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            _repair_mojibake_text(key) if isinstance(key, str) else key: _repair_nested_strings(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_repair_nested_strings(item) for item in value]
+    return _repair_mojibake_text(value)
+
+
+def _is_suspicious_text(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    return any(token in value for token in ("Ã", "Â", "â", "\ufffd", "\x81", "\x8d", "\x8f", "\x90", "\x9d"))
+
+
+def _repair_menu_config(value: Any) -> List[Dict[str, Any]]:
+    repaired = _repair_nested_strings(value)
+    if not isinstance(repaired, list):
+        return DEFAULT_MENU
+
+    normalized: List[Dict[str, Any]] = []
+    for group in repaired:
+        if not isinstance(group, dict):
+            continue
+        normalized_group = dict(group)
+        items: List[Dict[str, Any]] = []
+        for item in normalized_group.get("items", []) or []:
+            if not isinstance(item, dict):
+                continue
+            normalized_item = dict(item)
+            default_item = DEFAULT_MENU_ITEM_BY_ID.get(str(normalized_item.get("id") or ""))
+            if default_item and _is_suspicious_text(normalized_item.get("label")):
+                normalized_item["label"] = default_item["label"]
+            if default_item and _is_suspicious_text(normalized_item.get("path")):
+                normalized_item["path"] = default_item["path"]
+            items.append(normalized_item)
+        normalized_group["items"] = items
+        group_key = tuple(str(item.get("id")) for item in items if item.get("id"))
+        default_title = DEFAULT_MENU_TITLE_BY_ITEM_IDS.get(group_key)
+        if default_title and _is_suspicious_text(normalized_group.get("title")):
+            normalized_group["title"] = default_title
+        normalized.append(normalized_group)
+    return normalized or DEFAULT_MENU
+
+
 def _tenant_scope(tenant_code: str, requested: Optional[str] = None) -> str:
     target = (requested or tenant_code or "default").strip() or "default"
     return target
@@ -256,9 +327,11 @@ def _serialize_theme(theme: Optional[TenantTheme]) -> Dict[str, Any]:
 def _serialize_ui_config(ui: Optional[TenantUiConfig]) -> Dict[str, Any]:
     if not ui:
         return {"menu": DEFAULT_MENU, "modules": {}, "locale": "es-CO", "timezone": "America/Bogota"}
+    menu = _repair_menu_config(_json_load(ui.menu_json, DEFAULT_MENU))
+    modules = _repair_nested_strings(_json_load(ui.modules_json, {}))
     return {
-        "menu": _json_load(ui.menu_json, DEFAULT_MENU),
-        "modules": _json_load(ui.modules_json, {}),
+        "menu": menu if isinstance(menu, list) else DEFAULT_MENU,
+        "modules": modules if isinstance(modules, dict) else {},
         "locale": ui.locale,
         "timezone": ui.timezone,
     }
@@ -303,6 +376,23 @@ def _ensure_tenant_seed(session: Session, tenant_code: str, actor: str = "system
                 updated_at=datetime.utcnow(),
             )
         )
+    else:
+        repaired_menu = _repair_menu_config(_json_load(ui.menu_json, DEFAULT_MENU))
+        repaired_modules = _repair_nested_strings(_json_load(ui.modules_json, {}))
+        repaired_menu_json = json.dumps(
+            repaired_menu if isinstance(repaired_menu, list) else DEFAULT_MENU,
+            ensure_ascii=False,
+        )
+        repaired_modules_json = json.dumps(
+            repaired_modules if isinstance(repaired_modules, dict) else {},
+            ensure_ascii=False,
+        )
+        if ui.menu_json != repaired_menu_json or ui.modules_json != repaired_modules_json:
+            ui.menu_json = repaired_menu_json
+            ui.modules_json = repaired_modules_json
+            ui.updated_by = actor
+            ui.updated_at = datetime.utcnow()
+            session.add(ui)
     if not session.exec(select(TenantFeatureFlag).where(TenantFeatureFlag.tenant_code == tenant_code)).all():
         enabled = PROFILE_FEATURES.get(profile, PROFILE_FEATURES["full"])
         for feature in FEATURE_CATALOG:
@@ -1637,7 +1727,7 @@ def _run_simulation_calculation(
                 "type": "bottleneck",
                 "source_module": "engineering",
                 "node_id": row["node_id"],
-                "message": f"Incrementar capacidad o balanceo en {row['label']} (utilizaciÃ³n {row['utilization_ratio']:.2f}).",
+                "message": f"Incrementar capacidad o balanceo en {row['label']} (utilización {row['utilization_ratio']:.2f}).",
                 "priority": "high",
             }
         )
@@ -1974,8 +2064,8 @@ def sync_simulation_actions(
             )
         ).first()
         description = (
-            f"[SimulaciÃ³n] Nodo crÃ­tico {point.get('label')}: "
-            f"utilizaciÃ³n {point.get('utilization_ratio')} y capacidad efectiva {point.get('effective_capacity_per_hour')}."
+            f"[Simulación] Nodo crítico {point.get('label')}: "
+            f"utilización {point.get('utilization_ratio')} y capacidad efectiva {point.get('effective_capacity_per_hour')}."
         )
         if action:
             action.description = description
@@ -2030,7 +2120,7 @@ def export_simulation_executive(
         f"Lead time: {kpis.get('lead_time_min', 0)} min",
         f"WIP estimado: {kpis.get('wip_units', 0)} unidades",
         f"Cumplimiento: {kpis.get('compliance_pct', 0)}%",
-        f"Puntos crÃ­ticos: {len(data.get('critical_points', []))}",
+        f"Puntos críticos: {len(data.get('critical_points', []))}",
         f"Recomendaciones: {len(data.get('recommendations', []))}",
     ]
     return {
